@@ -15,6 +15,12 @@ export type BrowserProof = {
   siblings: ProofStep[];
 };
 
+export type VerificationResult = {
+  valid: boolean;
+  leafHash: string;
+  recomputedRoot: string;
+};
+
 export function buildMerkleProof(rows: string[], selectedIndex: number): BrowserProof {
   if (!rows.length || selectedIndex < 0 || selectedIndex >= rows.length) {
     return emptyProof(selectedIndex);
@@ -54,16 +60,30 @@ export function buildMerkleProof(rows: string[], selectedIndex: number): Browser
     cursor = Math.floor(cursor / 2);
   }
 
-  const recomputedRoot = recomputeRoot(rows[selectedIndex], siblings);
+  const verification = verifyMerkleProof(rows[selectedIndex], toHex(levels.at(-1)![0]), siblings);
   const root = toHex(levels.at(-1)![0]);
 
   return {
-    valid: root === recomputedRoot,
+    valid: verification.valid,
     leaf: rows[selectedIndex],
-    leafHash: toHex(leafHash(rows[selectedIndex])),
+    leafHash: verification.leafHash,
     root,
-    recomputedRoot,
+    recomputedRoot: verification.recomputedRoot,
     siblings,
+  };
+}
+
+export function verifyMerkleProof(
+  row: string,
+  expectedRoot: string,
+  siblings: ProofStep[],
+): VerificationResult {
+  const recomputedRoot = recomputeRoot(row, siblings);
+
+  return {
+    valid: recomputedRoot === expectedRoot,
+    leafHash: toHex(leafHash(row)),
+    recomputedRoot,
   };
 }
 

@@ -1,18 +1,44 @@
-import { useMemo, useState } from "react";
-import { fetchGraphEvents } from "../lib/graph";
-import { buildMerkleProof } from "../lib/merkle";
+import { useEffect, useMemo, useState } from "react";
+import { DEX_PRESETS } from "../data/dexPresets";
+import {
+  DEFAULT_STABLE_POOL,
+  SAMPLE_ROWS,
+  type LabTab,
+} from "../data/proofLabContent";
+import {
+  fetchGraphEvents,
+  graphEndpointTemplate,
+  normalizeGraphRows,
+  queryTemplate,
+  type GraphFetchMode,
+  type GraphResponse,
+} from "../lib/graph";
+import { buildMerkleProof, verifyMerkleProof } from "../lib/merkle";
+import { sourceLabel } from "../utils/text";
+import { DatasetPanel } from "./proof-lab/DatasetPanel";
+import { ProofLabHeader } from "./proof-lab/ProofLabHeader";
+import { ProofLabTabs } from "./proof-lab/ProofLabTabs";
+import { QueryPanel } from "./proof-lab/QueryPanel";
+import { ReceiptPanel } from "./proof-lab/ReceiptPanel";
 
-const SAMPLE_ROWS = [
-  "tx:alice->bob:100",
-  "tx:bob->carol:50",
-  "tx:carol->dave:25",
-  "tx:dave->erin:10",
-].join("\n");
+const DEFAULT_PRESET = DEX_PRESETS[0];
+const CUSTOM_PRESET_ID = "custom";
+const DEFAULT_SUBGRAPH_ID = import.meta.env.VITE_DEFAULT_SUBGRAPH_ID ?? DEFAULT_PRESET.subgraphId;
 
 export function ProofLab() {
   const [rowsText, setRowsText] = useState(SAMPLE_ROWS);
   const [selectedRow, setSelectedRow] = useState(0);
+  const [apiKey, setApiKey] = useState("");
+  const [endpoint, setEndpoint] = useState(() => graphEndpointTemplate(DEFAULT_SUBGRAPH_ID));
+  const [presetId, setPresetId] = useState(DEFAULT_PRESET.id);
+  const [subgraphId, setSubgraphId] = useState(DEFAULT_SUBGRAPH_ID);
   const [wallet, setWallet] = useState(import.meta.env.VITE_DEFAULT_WALLET ?? "");
+  const [pool, setPool] = useState(import.meta.env.VITE_DEFAULT_POOL ?? DEFAULT_STABLE_POOL);
+  const [mode, setMode] = useState<GraphFetchMode>("recent");
+  const [queryText, setQueryText] = useState(() => queryTemplate("recent", DEFAULT_STABLE_POOL));
+  const [jsonText, setJsonText] = useState(sampleJson());
+  const [activeTab, setActiveTab] = useState<LabTab>("query");
+  const [clientClaim, setClientClaim] = useState("tx:alice->bob:100");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("Edit rows or fetch live data, then generate a proof.");
 
@@ -22,109 +48,180 @@ export function ProofLab() {
   );
 
   const proof = useMemo(() => buildMerkleProof(rows, selectedRow), [rows, selectedRow]);
+  const verification = useMemo(
+    () => verifyMerkleProof(clientClaim, proof.root, proof.siblings),
+    [clientClaim, proof.root, proof.siblings],
+  );
+  const selectedLeaf = rows[selectedRow] ?? "";
+  const selectedPreset = DEX_PRESETS.find((preset) => preset.id === presetId) ?? DEFAULT_PRESET;
+  const visibleEndpoint = endpoint || graphEndpointTemplate(subgraphId);
+
+  useEffect(() => {
+    setClientClaim(selectedLeaf);
+  }, [selectedLeaf]);
 
   async function loadGraphData() {
     setLoading(true);
-    setMessage("Fetching live indexed rows from The Graph...");
+    setMessage(`Fetching ${sourceLabel(mode).toLowerCase()} from The Graph...`);
 
     try {
-      const events = await fetchGraphEvents(wallet);
-      setRowsText(events.join("\n"));
+      const result = await fetchGraphEvents({
+        apiKey,
+        endpoint,
+        mode,
+        pool,
+        query: queryText,
+        subgraphId,
+        wallet,
+      });
+
+      setRowsText(result.rows.join("\n"));
+      setJsonText(formatJson(result.json));
       setSelectedRow(0);
-      setMessage(`Loaded ${events.length} live rows. Now generate or inspect a proof.`);
+      setActiveTab("query");
+      setMessage(`Loaded ${result.rows.length} ${sourceLabel(mode).toLowerCase()}. JSON is shown beside the query.`);
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Unknown error";
-      setMessage(`${detail} Using editable demo rows for now.`);
+      setMessage(`${detail} The demo rows are still editable, so you can keep testing proofs.`);
     } finally {
       setLoading(false);
     }
   }
 
+  function useJsonAsRows() {
+    try {
+      const rowsFromJson = normalizeGraphRows(JSON.parse(jsonText) as GraphResponse);
+
+      if (!rowsFromJson.length) {
+        setMessage("That JSON has no swaps array to convert. Keep editing or run a query first.");
+        return;
+      }
+
+      setRowsText(rowsFromJson.join("\n"));
+      setSelectedRow(0);
+      setActiveTab("dataset");
+      setMessage(`Converted ${rowsFromJson.length} JSON swaps into receipt rows.`);
+    } catch {
+      setMessage("The JSON is not valid yet. Fix it, then convert again.");
+    }
+  }
+
+  function selectPreset(nextPresetId: string) {
+    const nextPreset = DEX_PRESETS.find((preset) => preset.id === nextPresetId) ?? DEFAULT_PRESET;
+
+    setPresetId(nextPreset.id);
+    setSubgraphId(nextPreset.subgraphId);
+    setEndpoint(graphEndpointTemplate(nextPreset.subgraphId));
+  }
+
+  function updateSubgraphId(value: string) {
+    setSubgraphId(value);
+    setEndpoint(graphEndpointTemplate(value));
+    setPresetId(CUSTOM_PRESET_ID);
+  }
+
   return (
     <section className="section" id="lab">
       <div className="section-heading">
-        <p className="eyebrow">Live proof lab</p>
-        <h2>Edit records. Pick a row. Verify the receipt.</h2>
+        <p className="eyebrow">Live proof playground</p>
+        <h2>Turn DEX rows into receipts anyone can verify.</h2>
         <p>
-          The browser rebuilds the Merkle root from only the selected row and
-          its sibling hashes. That is the light-client story in one screen.
+          Fetch swaps, pick one row, then watch the browser verify it using only
+          the row, a Merkle root, and a small proof. No database trust required.
         </p>
       </div>
 
-      <div className="lab-grid">
-        <div className="panel">
-          <label htmlFor="wallet">Wallet or address to query</label>
-          <div className="inline-form">
-            <input
-              id="wallet"
-              value={wallet}
-              onChange={(event) => setWallet(event.target.value)}
-              placeholder="0x..."
-            />
-            <button type="button" onClick={loadGraphData} disabled={loading}>
-              {loading ? "Loading" : "Fetch The Graph"}
-            </button>
-          </div>
+      <div className="graph-explorer">
+        <ProofLabHeader
+          loading={loading}
+          mode={mode}
+          preset={selectedPreset}
+          subgraphId={subgraphId}
+          onRun={loadGraphData}
+        />
 
-          <label htmlFor="rows">Transactions or indexed rows</label>
-          <textarea
-            id="rows"
-            value={rowsText}
-            onChange={(event) => setRowsText(event.target.value)}
+        <ProofLabTabs activeTab={activeTab} onChange={setActiveTab} />
+
+        {activeTab === "query" && (
+          <QueryPanel
+            apiKey={apiKey}
+            endpoint={endpoint}
+            jsonText={jsonText}
+            loading={loading}
+            mode={mode}
+            pool={pool}
+            presetId={presetId}
+            queryText={queryText}
+            selectedPreset={selectedPreset}
+            subgraphId={subgraphId}
+            visibleEndpoint={visibleEndpoint}
+            wallet={wallet}
+            onApiKeyChange={setApiKey}
+            onEndpointChange={setEndpoint}
+            onJsonTextChange={setJsonText}
+            onModeChange={setMode}
+            onPoolChange={setPool}
+            onPresetChange={selectPreset}
+            onQueryTextChange={setQueryText}
+            onRun={loadGraphData}
+            onSubgraphIdChange={updateSubgraphId}
+            onUseJsonRows={useJsonAsRows}
+            onWalletChange={setWallet}
           />
+        )}
 
-          <label htmlFor="row">Which row should the client check?</label>
-          <input
-            id="row"
-            type="number"
-            min={0}
-            max={Math.max(rows.length - 1, 0)}
-            value={selectedRow}
-            onChange={(event) => setSelectedRow(Number(event.target.value))}
+        {activeTab === "dataset" && (
+          <DatasetPanel
+            message={message}
+            rowsLength={rows.length}
+            rowsText={rowsText}
+            selectedRow={selectedRow}
+            onRowsTextChange={setRowsText}
+            onSelectedRowChange={setSelectedRow}
+            onUseJsonRows={useJsonAsRows}
           />
-          <p className="hint">{message}</p>
-        </div>
+        )}
 
-        <div className="panel result-panel">
-          <div className="status-row">
-            <span className={proof.valid ? "status good" : "status bad"}>
-              {proof.valid ? "Verified" : "Invalid row"}
-            </span>
-            <span>{rows.length} rows</span>
-            <span>{proof.siblings.length} proof hashes</span>
-          </div>
-
-          <Result label="Checked row" value={`#${selectedRow} ${proof.leaf}`} />
-          <Result label="Merkle root" value={proof.root} />
-          <Result label="Client recomputed" value={proof.recomputedRoot} />
-          <Result label="Leaf hash" value={proof.leafHash} />
-
-          <div className="proof-list">
-            <p className="eyebrow">Tiny proof sent to the client</p>
-            {proof.siblings.map((step, index) => (
-              <div className="proof-step" key={`${step.hash}-${index}`}>
-                <span>{index + 1}</span>
-                <b>{step.side} sibling</b>
-                <code>{short(step.hash, 36)}</code>
-              </div>
-            ))}
-          </div>
-        </div>
+        {activeTab === "receipt" && (
+          <ReceiptPanel
+            clientClaim={clientClaim}
+            proof={proof}
+            rowsLength={rows.length}
+            selectedLeaf={selectedLeaf}
+            selectedRow={selectedRow}
+            verification={verification}
+            onClientClaimChange={setClientClaim}
+          />
+        )}
       </div>
     </section>
   );
 }
 
-function Result({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="result">
-      <span>{label}</span>
-      <code>{short(value)}</code>
-    </div>
-  );
+function formatJson(value: GraphResponse) {
+  return JSON.stringify(value, null, 2);
 }
 
-function short(value: string, size = 44) {
-  if (value.length <= size) return value;
-  return `${value.slice(0, size)}...`;
+function sampleJson() {
+  return formatJson({
+    data: {
+      swaps: [
+        {
+          id: "sample-swap-0",
+          sender: "0xserver",
+          recipient: "0xclient",
+          origin: "0xwallet",
+          amount0: "100",
+          amount1: "-99.8",
+          amountUSD: "100.00",
+          transaction: {
+            id: "0xtxhash",
+            blockNumber: "25947441",
+          },
+          token0: { symbol: "USDC" },
+          token1: { symbol: "USDT" },
+        },
+      ],
+    },
+  });
 }

@@ -11,7 +11,6 @@ export function Header() {
 
       <div className="hero-grid">
         <div>
-          <p className="eyebrow">ETHGlobal Online idea</p>
           <h1>Blockchain data answers with cryptographic receipts.</h1>
           <p className="lede">
             Fetch indexed events, commit the dataset with MerkleForge, and send

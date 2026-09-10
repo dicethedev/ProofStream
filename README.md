@@ -52,8 +52,12 @@ npm install
 npm run dev
 ```
 
-Open the local Vite URL and edit the transaction rows. Click **Generate proof**
-to see the Merkle root, checked row, sibling path, and verification result.
+Open the local Vite URL and use the proof playground:
+
+1. Choose sample rows or fetch live swaps from The Graph.
+2. Pick one row to prove.
+3. Edit the client claim or click **Tamper test**.
+4. Watch the receipt move between **Verified** and **Rejected**.
 
 ## Live Data From The Graph
 
@@ -63,9 +67,26 @@ Copy the environment file:
 cp .env.example apps/web/.env.local
 ```
 
-Set `VITE_GRAPH_ENDPOINT` to a live Subgraph or Graph Gateway endpoint. The UI
-will use live indexed data when the endpoint is available and fall back to demo
-records when it is not.
+Get a Graph Gateway API key from Subgraph Studio, then paste it into the demo at
+runtime. ProofStream does not store the key and does not print it back into the
+page. The visible query URL stays in this form:
+`https://gateway.thegraph.com/api/subgraphs/id/{subgraph_id}`.
+
+The browser sends the API key only as an `Authorization: Bearer ...` request
+header when you click **Query**.
+
+The proof lab includes DEX presets and three live query modes:
+
+- **Uniswap V3 mainnet** — default preset for the smoothest demo.
+- **PancakeSwap V3 Ethereum / BNB Chain** — alternative DEX presets.
+- **Custom DEX** — paste any swaps-compatible subgraph ID from Graph Explorer.
+- **Recent swaps** — safest query mode; no filter, newest rows.
+- **Pool feed** — filters by one pool address.
+- **Wallet activity** — filters by swap `origin`, with retry handling for
+  temporary gateway/indexer failures.
+
+Fetched subgraph data is shown as JSON first, then normalized into editable
+receipt rows. The proof verifies one row from those rows, not the whole table.
 
 ## Core Flow
 
