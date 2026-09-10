@@ -1,0 +1,16 @@
+{
+  "name": "merkleforge-proofstream",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Verifiable blockchain data proofs powered by MerkleForge Framework.",
+  "scripts": {
+    "dev": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/web run build",
+    "preview": "npm --prefix apps/web run preview",
+    "rust:demo": "cargo run -p proofstream-core",
+    "rust:test": "cargo test --workspace"
+  },
+  "workspaces": [
+    "apps/web"
+  ]
+}
