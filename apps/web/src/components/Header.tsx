@@ -11,10 +11,11 @@ export function Header() {
 
       <div className="hero-grid">
         <div>
-          <h1>Blockchain data answers with cryptographic receipts.</h1>
+          <p className="hero-kicker">Live blockchain data, backed by proof</p>
+          <h1>Do not just show DEX data. Prove it.</h1>
           <p className="lede">
-            Fetch indexed events, commit the dataset with MerkleForge, and send
-            a tiny proof anyone can verify without trusting your backend.
+            ProofStream fetches live swaps from The Graph, seals them with
+            MerkleForge, and gives users a small receipt they can verify in the browser.
           </p>
           <div className="hero-actions">
             <a href="#lab" className="primary">Try the proof lab</a>
@@ -23,17 +24,19 @@ export function Header() {
         </div>
 
         <div className="commitment-card" aria-label="ProofStream visual">
-          <div className="root-node">Root</div>
-          <div className="proof-path">
-            <span />
-            <span />
-            <span />
+          <div className="proof-orbit" aria-hidden="true" />
+          <div className="proof-source-card">
+            <span>Source</span>
+            <b>The Graph JSON</b>
+            <small>Live swaps, pools, and wallet activity</small>
           </div>
-          <div className="dataset-plane">
-            <b>Live indexed rows</b>
-            <small>The Graph → MerkleForge → Proof</small>
+          <div className="proof-root-node">Root</div>
+          <div className="proof-receipt-card">
+            <span>Receipt</span>
+            <b>One row + helper hashes</b>
+            <small>Enough to check the claim</small>
           </div>
-          <div className="agent-pill">AI agent verifies</div>
+          <div className="proof-client-card">Browser verifies</div>
         </div>
       </div>
     </section>

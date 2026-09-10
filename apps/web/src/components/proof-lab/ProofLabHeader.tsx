@@ -49,10 +49,14 @@ export function ProofLabHeader({ loading, mode, preset, subgraphId, onRun }: Pro
       <div className="index-status">
         <span className="sync-badge"><span /> Ready</span>
         <div />
-        <small>
-          <span className="realtime-icon" aria-hidden="true" />{" "}
-          Realtime path: JSON data → human rows → cryptographic receipt
-        </small>
+        <div className="realtime-pipeline" aria-label="Realtime verification path">
+          <span className="realtime-icon" aria-hidden="true" />
+          <b>The Graph JSON</b>
+          <i aria-hidden="true">→</i>
+          <b>Readable rows</b>
+          <i aria-hidden="true">→</i>
+          <b>Proof receipt</b>
+        </div>
       </div>
     </>
   );

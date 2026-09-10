@@ -16,6 +16,7 @@ import {
 import { buildMerkleProof, verifyMerkleProof } from "../lib/merkle";
 import { sourceLabel } from "../utils/text";
 import { DatasetPanel } from "./proof-lab/DatasetPanel";
+import { IntroModal } from "./proof-lab/IntroModal";
 import { ProofLabHeader } from "./proof-lab/ProofLabHeader";
 import { ProofLabTabs } from "./proof-lab/ProofLabTabs";
 import { QueryPanel } from "./proof-lab/QueryPanel";
@@ -41,6 +42,7 @@ export function ProofLab() {
   const [clientClaim, setClientClaim] = useState("tx:alice->bob:100");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("Edit rows or fetch live data, then generate a proof.");
+  const [showIntro, setShowIntro] = useState(true);
 
   const rows = useMemo(
     () => rowsText.split("\n").map((row) => row.trim()).filter(Boolean),
@@ -77,9 +79,17 @@ export function ProofLab() {
 
       setRowsText(result.rows.join("\n"));
       setJsonText(formatJson(result.json));
+      if (result.suggestedPool) {
+        setPool(result.suggestedPool);
+      }
+      if (result.suggestedWallet) {
+        setWallet(result.suggestedWallet);
+      }
       setSelectedRow(0);
       setActiveTab("query");
-      setMessage(`Loaded ${result.rows.length} ${sourceLabel(mode).toLowerCase()}. JSON is shown beside the query.`);
+      setMessage(
+        `Loaded ${result.rows.length} ${sourceLabel(mode).toLowerCase()}. Pool and wallet filters were filled from the first row.`,
+      );
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Unknown error";
       setMessage(`${detail} The demo rows are still editable, so you can keep testing proofs.`);
@@ -122,9 +132,11 @@ export function ProofLab() {
 
   return (
     <section className="section" id="lab">
+      {showIntro && <IntroModal onClose={() => setShowIntro(false)} />}
+
       <div className="section-heading">
         <p className="eyebrow">Live proof playground</p>
-        <h2>Turn DEX rows into receipts anyone can verify.</h2>
+        <h2>Verify DEX activity with simple proof receipts.</h2>
         <p>
           Fetch swaps, pick one row, then watch the browser verify it using only
           the row, a Merkle root, and a small proof. No database trust required.
@@ -173,7 +185,7 @@ export function ProofLab() {
         {activeTab === "dataset" && (
           <DatasetPanel
             message={message}
-            rowsLength={rows.length}
+            rows={rows}
             rowsText={rowsText}
             selectedRow={selectedRow}
             onRowsTextChange={setRowsText}
@@ -214,6 +226,9 @@ function sampleJson() {
           amount0: "100",
           amount1: "-99.8",
           amountUSD: "100.00",
+          pool: {
+            id: "0x7858e59e0c01ea06df3af3d20ac7b0003275d4bf",
+          },
           transaction: {
             id: "0xtxhash",
             blockNumber: "25947441",

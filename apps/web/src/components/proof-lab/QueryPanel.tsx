@@ -55,6 +55,8 @@ export function QueryPanel({
   onUseJsonRows,
   onWalletChange,
 }: QueryPanelProps) {
+  const jsonSummary = summarizeJson(jsonText);
+
   return (
     <div className="tab-panel">
       <div className="query-quickstart">
@@ -63,6 +65,10 @@ export function QueryPanel({
           <p>
             Paste your Graph API key, choose a DEX preset, and run a swaps query.
             ProofStream turns the response into rows you can prove.
+          </p>
+          <p>
+            After a successful query, the first swap automatically fills the Pool
+            address and Wallet origin fields so you can switch modes and drill down.
           </p>
           <p className="query-format">
             <b>Query URL format</b>
@@ -191,10 +197,24 @@ export function QueryPanel({
 
         <div className="console-pane">
           <div className="console-toolbar">
-            <span>JSON result</span>
+            <span>The Graph JSON</span>
             <button className="icon-button" type="button" onClick={onUseJsonRows} aria-label="Convert JSON to rows">
               ⇣
             </button>
+          </div>
+          <div className="json-result-summary">
+            <article>
+              <span>Status</span>
+              <b>{jsonSummary.valid ? "Readable JSON" : "Needs a fix"}</b>
+            </article>
+            <article>
+              <span>Rows found</span>
+              <b>{jsonSummary.count}</b>
+            </article>
+            <article>
+              <span>Next step</span>
+              <b>Convert to rows</b>
+            </article>
           </div>
           <textarea
             className="json-panel"
@@ -223,4 +243,20 @@ export function QueryPanel({
       </div>
     </div>
   );
+}
+
+function summarizeJson(jsonText: string) {
+  try {
+    const parsed = JSON.parse(jsonText) as { data?: { swaps?: unknown[] } };
+
+    return {
+      count: parsed.data?.swaps?.length ?? 0,
+      valid: true,
+    };
+  } catch {
+    return {
+      count: 0,
+      valid: false,
+    };
+  }
 }

@@ -14,6 +14,8 @@ export type GraphFetchResult = {
   rows: string[];
   json: GraphResponse;
   endpoint: string;
+  suggestedPool: string;
+  suggestedWallet: string;
 };
 
 const RETRYABLE_ERROR_HINTS = ["Timeout", "too far behind", "BadResponse", "bad indexers"];
@@ -37,6 +39,8 @@ export async function fetchGraphEvents(input: FetchGraphEventsInput): Promise<Gr
     endpoint,
     json: data,
     rows: normalizeGraphRows(data),
+    suggestedPool: swaps[0]?.pool?.id ?? "",
+    suggestedWallet: swaps[0]?.origin ?? "",
   };
 }
 
@@ -213,6 +217,9 @@ const SWAP_FIELDS = `
   sender
   recipient
   origin
+  pool {
+    id
+  }
   amount0
   amount1
   amountUSD
@@ -245,6 +252,7 @@ type GraphSwap = {
   sender: string;
   recipient: string;
   origin: string;
+  pool?: { id: string };
   amount0: string;
   amount1: string;
   amountUSD?: string;
