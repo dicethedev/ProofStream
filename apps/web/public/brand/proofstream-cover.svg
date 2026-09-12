@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">ProofStream landing page cover</title>
+  <desc id="desc">ProofStream verifies DEX activity with proof receipts.</desc>
+  <rect width="1600" height="900" fill="#F5F5F8"/>
+  <rect y="0" width="1600" height="82" fill="#FFFFFF"/>
+  <path d="M0 82H1600" stroke="#D9D9E2" stroke-width="2"/>
+  <text x="178" y="50" fill="#292932" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" letter-spacing="-1.8">ProofStream</text>
+  <text x="785" y="49" text-anchor="middle" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="16">Product</text>
+  <text x="885" y="49" text-anchor="middle" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="16">How it works</text>
+  <text x="1000" y="49" text-anchor="middle" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="16">Use cases</text>
+  <text x="1090" y="49" text-anchor="middle" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="16">Trust</text>
+  <text x="1160" y="49" text-anchor="middle" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="16">FAQ</text>
+  <circle cx="1268" cy="41" r="22" fill="#EEF0F5"/>
+  <circle cx="1268" cy="41" r="7" fill="#292932"/>
+  <rect x="1303" y="18" width="126" height="46" rx="23" fill="#050506"/>
+  <text x="1366" y="47" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">Open proof lab</text>
+
+  <text x="800" y="224" text-anchor="middle" fill="#0A0A0D" font-family="Arial, Helvetica, sans-serif" font-size="73" font-weight="700" letter-spacing="-5">Verify DEX activity</text>
+  <text x="800" y="302" text-anchor="middle" fill="#0A0A0D" font-family="Arial, Helvetica, sans-serif" font-size="73" font-weight="700" letter-spacing="-5">with proof receipts</text>
+  <rect x="701" y="343" width="198" height="52" rx="26" fill="#050506"/>
+  <text x="800" y="376" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">Open proof lab</text>
+
+  <rect x="530" y="464" width="540" height="292" rx="16" fill="#FFFFFF" stroke="#D3D4DE" stroke-width="2"/>
+  <path d="M530 522H1070" stroke="#D3D4DE" stroke-width="2"/>
+  <text x="552" y="500" fill="#34343D" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">ProofStream</text>
+  <text x="800" y="500" text-anchor="middle" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">02 / Seal</text>
+  <circle cx="1018" cy="494" r="4" fill="#D8D8E2"/>
+  <circle cx="1033" cy="494" r="4" fill="#4C4C58"/>
+  <circle cx="1048" cy="494" r="4" fill="#D8D8E2"/>
+  <text x="565" y="598" fill="#A1A1AF" font-family="Arial, Helvetica, sans-serif" font-size="12">Dataset</text>
+  <text x="565" y="634" fill="#34343D" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">12 rows committed</text>
+  <text x="565" y="660" fill="#A1A1AF" font-family="Arial, Helvetica, sans-serif" font-size="12">MerkleForge hashes every activity record</text>
+  <text x="795" y="634" text-anchor="middle" fill="#34343D" font-family="Arial, Helvetica, sans-serif" font-size="25">→</text>
+  <text x="852" y="598" fill="#A1A1AF" font-family="Arial, Helvetica, sans-serif" font-size="12">Dataset fingerprint</text>
+  <text x="852" y="634" fill="#34343D" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">0x8f3a...91c</text>
+  <text x="852" y="660" fill="#A1A1AF" font-family="Arial, Helvetica, sans-serif" font-size="12">Changing one row produces a different root</text>
+  <path d="M530 700H1070" stroke="#D3D4DE" stroke-width="2"/>
+  <circle cx="552" cy="728" r="4" fill="#34343D"/>
+  <text x="566" y="733" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">Root created</text>
+  <rect x="934" y="710" width="112" height="34" rx="17" fill="#34343D"/>
+  <text x="990" y="732" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">Run it yourself</text>
+</svg>

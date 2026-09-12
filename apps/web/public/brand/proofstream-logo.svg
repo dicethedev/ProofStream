@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ProofStream</title>
+  <desc id="desc">Simple ProofStream wordmark.</desc>
+  <rect width="512" height="512" fill="#F5F5F8"/>
+  <text x="256" y="275" text-anchor="middle" fill="#292932" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="700" letter-spacing="-4">ProofStream</text>
+</svg>

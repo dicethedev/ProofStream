@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">ProofStream</title>
+  <desc id="desc">Verify DEX activity with proof receipts.</desc>
+  <rect width="1200" height="630" fill="#F5F5F8"/>
+  <path d="M0 86H1200M0 525H1200" stroke="#D9D9E2" stroke-width="2"/>
+  <text x="74" y="58" fill="#292932" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="-1.5">ProofStream</text>
+  <text x="74" y="184" fill="#0A0A0D" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="700" letter-spacing="-4">Verify DEX activity</text>
+  <text x="74" y="256" fill="#0A0A0D" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="700" letter-spacing="-4">with proof receipts</text>
+  <text x="77" y="310" fill="#6B6B78" font-family="Arial, Helvetica, sans-serif" font-size="21">Cryptographic proof for one readable blockchain record.</text>
+  <rect x="74" y="360" width="184" height="48" rx="24" fill="#050506"/>
+  <text x="166" y="391" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">Open proof lab</text>
+  <rect x="692" y="145" width="430" height="300" rx="15" fill="#FFFFFF" stroke="#D3D4DE" stroke-width="2"/>
+  <path d="M692 204H1122" stroke="#D3D4DE" stroke-width="2"/>
+  <text x="716" y="183" fill="#34343D" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">ProofStream</text>
+  <text x="907" y="183" text-anchor="middle" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700">02 / Seal</text>
+  <circle cx="1062" cy="178" r="4" fill="#D8D8E2"/><circle cx="1077" cy="178" r="4" fill="#4C4C58"/><circle cx="1092" cy="178" r="4" fill="#D8D8E2"/>
+  <text x="720" y="271" fill="#A1A1AF" font-family="Arial, Helvetica, sans-serif" font-size="12">DATASET FINGERPRINT</text>
+  <text x="720" y="310" fill="#34343D" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">0x8f3a...91c</text>
+  <path d="M720 340H1094" stroke="#D3D4DE" stroke-width="2"/>
+  <circle cx="728" cy="383" r="5" fill="#34343D"/>
+  <text x="744" y="389" fill="#5F5F6B" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Root created</text>
+  <rect x="966" y="362" width="128" height="38" rx="19" fill="#34343D"/>
+  <text x="1030" y="386" text-anchor="middle" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">Receipt valid</text>
+  <text x="74" y="574" fill="#8A8A99" font-family="Arial, Helvetica, sans-serif" font-size="16" letter-spacing="1">MERKLE PROOFS FOR VERIFIABLE BLOCKCHAIN DATA</text>
+</svg>
