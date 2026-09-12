@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import {
   LuArrowRight,
+  LuCheck,
   LuCircleCheck,
+  LuCopy,
+  LuExternalLink,
   LuFileJson,
   LuPlay,
   LuReceiptText,
@@ -10,6 +13,7 @@ import {
 import type { DexPreset } from "../../data/dexPresets";
 import { dexLogoUrl } from "../../data/dexPresets";
 import type { GraphFetchMode } from "../../lib/graph";
+import { copyToClipboard } from "../../utils/clipboard";
 import { dexInitials, short, sourceLabel } from "../../utils/text";
 
 type ProofLabHeaderProps = {
@@ -30,11 +34,31 @@ export function ProofLabHeader({
   onRun,
 }: ProofLabHeaderProps) {
   const [logoFailed, setLogoFailed] = useState(false);
+  const [copied, setCopied] = useState(false);
   const logoUrl = dexLogoUrl(preset);
+  const explorerUrl = subgraphId
+    ? `https://thegraph.com/explorer/subgraphs/${encodeURIComponent(subgraphId)}`
+    : "";
 
   useEffect(() => {
     setLogoFailed(false);
   }, [preset.id]);
+
+  useEffect(() => {
+    setCopied(false);
+  }, [subgraphId]);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timeout = window.setTimeout(() => setCopied(false), 1800);
+    return () => window.clearTimeout(timeout);
+  }, [copied]);
+
+  async function copySubgraphId() {
+    if (!subgraphId) return;
+    await copyToClipboard(subgraphId);
+    setCopied(true);
+  }
 
   return (
     <>
@@ -52,10 +76,32 @@ export function ProofLabHeader({
           <div className="subgraph-meta">
             <Meta label="Network" value={preset.network} />
             <Meta label="Mode" value={sourceLabel(mode)} />
-            <Meta
-              label="Subgraph ID"
-              value={short(subgraphId || "custom", 24)}
-            />
+            <div className="subgraph-id-meta">
+              <span>Subgraph ID</span>
+              <div className="subgraph-id-value">
+                <code title={subgraphId}>{short(subgraphId || "custom", 24)}</code>
+                <button
+                  type="button"
+                  onClick={copySubgraphId}
+                  disabled={!subgraphId}
+                  aria-label={copied ? "Subgraph ID copied" : "Copy Subgraph ID"}
+                  title={copied ? "Copied" : "Copy Subgraph ID"}
+                >
+                  {copied ? <LuCheck aria-hidden="true" /> : <LuCopy aria-hidden="true" />}
+                </button>
+                {explorerUrl && (
+                  <a
+                    href={explorerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Open this subgraph in The Graph Explorer"
+                    title="Open in The Graph Explorer"
+                  >
+                    <LuExternalLink aria-hidden="true" />
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         <div className="source-run-area">

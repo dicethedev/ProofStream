@@ -21,6 +21,7 @@ type QueryPanelProps = {
   readonly consoleRef: RefObject<HTMLDivElement | null>;
   readonly endpoint: string;
   readonly jsonText: string;
+  readonly hasLoadedQuery: boolean;
   readonly loading: boolean;
   readonly message: string;
   readonly mode: GraphFetchMode;
@@ -48,6 +49,7 @@ export function QueryPanel({
   consoleRef,
   endpoint,
   jsonText,
+  hasLoadedQuery,
   loading,
   message,
   mode,
@@ -97,7 +99,7 @@ export function QueryPanel({
             aria-checked={mode === source.mode}
             onClick={() => {
               onModeChange(source.mode);
-              onQueryTextChange(queryTemplate(source.mode, pool));
+              onQueryTextChange(queryTemplate(source.mode, pool, selectedPreset.schema));
             }}
           >
             <LuDatabase aria-hidden="true" />
@@ -160,7 +162,7 @@ export function QueryPanel({
                     value={pool}
                     onChange={(event) => {
                       onPoolChange(event.target.value);
-                      onQueryTextChange(queryTemplate("pool", event.target.value));
+                      onQueryTextChange(queryTemplate("pool", event.target.value, selectedPreset.schema));
                     }}
                     placeholder="Paste a 0x pool address"
                   />
@@ -230,21 +232,27 @@ export function QueryPanel({
           </div>
           <span className={jsonSummary.valid ? "query-status valid" : "query-status invalid"}>
             {jsonSummary.valid ? <LuCircleCheck aria-hidden="true" /> : <LuInfo aria-hidden="true" />}
-            {jsonSummary.valid ? `${jsonSummary.count} rows ready` : "JSON needs attention"}
+            {jsonSummary.valid
+              ? hasLoadedQuery ? `${jsonSummary.count} live rows ready` : "Sample JSON"
+              : "JSON needs attention"}
           </span>
         </header>
 
         <div className="graph-console" ref={consoleRef}>
         <div className="console-pane">
           <div className="console-toolbar">
-            <span><LuDatabase aria-hidden="true" /> GraphQL query</span>
+            <span className="console-toolbar-title">
+              <LuDatabase aria-hidden="true" />
+              <span>GraphQL query</span>
+            </span>
             <button
-              className="icon-button"
+              className="console-toolbar-action"
               type="button"
-              onClick={() => onQueryTextChange(queryTemplate(mode, pool))}
+              onClick={() => onQueryTextChange(queryTemplate(mode, pool, selectedPreset.schema))}
               aria-label="Reset query"
             >
-              <LuRefreshCw aria-hidden="true" /> Reset
+              <LuRefreshCw aria-hidden="true" />
+              <span>Reset query</span>
             </button>
           </div>
           <textarea
@@ -263,15 +271,19 @@ export function QueryPanel({
 
         <div className="console-pane">
           <div className="console-toolbar">
-            <span><LuFileJson aria-hidden="true" /> The Graph JSON</span>
-            <button className="icon-button" type="button" onClick={onUseJsonRows} aria-label="Convert JSON to readable rows">
-              <LuRows3 aria-hidden="true" /> Use as dataset
+            <span className="console-toolbar-title">
+              <LuFileJson aria-hidden="true" />
+              <span>JSON response</span>
+            </span>
+            <button className="console-toolbar-action" type="button" onClick={onUseJsonRows} aria-label="Convert JSON to readable rows">
+              <LuRows3 aria-hidden="true" />
+              <span>Build dataset</span>
             </button>
           </div>
           <div className="json-result-summary">
             <article>
               <span>Status</span>
-              <b>{jsonSummary.valid ? "Readable JSON" : "Needs a fix"}</b>
+              <b>{jsonSummary.valid ? hasLoadedQuery ? "Live JSON" : "Sample JSON" : "Needs a fix"}</b>
             </article>
             <article>
               <span>Rows found</span>
@@ -279,7 +291,7 @@ export function QueryPanel({
             </article>
             <article>
               <span>Next step</span>
-              <b>Build dataset</b>
+              <b>{hasLoadedQuery ? "Build dataset" : "Run live query"}</b>
             </article>
           </div>
           <textarea

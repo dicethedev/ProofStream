@@ -8,11 +8,15 @@ import {
 } from "react-icons/lu";
 import { parseReceiptRows } from "../../utils/receiptRows";
 import { short } from "../../utils/text";
+import { formatPairLabel, IndexedUsdValue, TokenAmountValue } from "./ActivityValue";
+import { TokenPairAvatar } from "./TokenPairAvatar";
 
 type DatasetPanelProps = {
   readonly message: string;
+  readonly network: string;
   readonly rows: string[];
   readonly rowsText: string;
+  readonly schema: "sushiswap-v3" | "uniswap-v3";
   readonly selectedRow: number;
   readonly onOpenReceipt: () => void;
   readonly onRowsTextChange: (value: string) => void;
@@ -22,8 +26,10 @@ type DatasetPanelProps = {
 
 export function DatasetPanel({
   message,
+  network,
   rows,
   rowsText,
+  schema,
   selectedRow,
   onOpenReceipt,
   onRowsTextChange,
@@ -94,12 +100,29 @@ export function DatasetPanel({
                 </span>
                 <span className="dataset-activity-pair">
                   <small>Token pair</small>
-                  <b>{row.pair}</b>
-                  <em>{row.amount}</em>
+                  <span className="dataset-activity-pair-name">
+                    <TokenPairAvatar
+                      network={network}
+                      token0Address={row.token0Address}
+                      token0Symbol={row.token0Symbol}
+                      token1Address={row.token1Address}
+                      token1Symbol={row.token1Symbol}
+                    />
+                    <b>{formatPairLabel(row.pair)}</b>
+                  </span>
+                  <TokenAmountValue
+                    amount={row.amount}
+                    network={network}
+                    rawUnits={schema === "sushiswap-v3"}
+                    token0Address={row.token0Address}
+                    token0Symbol={row.token0Symbol}
+                    token1Address={row.token1Address}
+                    token1Symbol={row.token1Symbol}
+                  />
                 </span>
                 <span>
                   <small>Indexed value</small>
-                  <b>{row.usd}</b>
+                  <IndexedUsdValue value={row.usd} />
                 </span>
                 <span>
                   <small>Transaction origin</small>

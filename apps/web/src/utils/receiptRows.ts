@@ -4,6 +4,10 @@ export type ReceiptRow = {
   origin: string;
   pair: string;
   raw: string;
+  token0Address: string;
+  token0Symbol: string;
+  token1Address: string;
+  token1Symbol: string;
   tx: string;
   usd: string;
 };
@@ -23,13 +27,19 @@ export function parseReceiptRow(raw: string): ReceiptRow {
         return [part.slice(0, separator), part.slice(separator + 1)];
       }),
   );
+  const pair = fields.swap || fields.tx || "row";
+  const [token0Symbol = "?", token1Symbol = "?"] = pair.split("/");
 
   return {
     amount: fields.amount || EMPTY_VALUE,
     block: fields.block || EMPTY_VALUE,
     origin: fields.origin || EMPTY_VALUE,
-    pair: fields.swap || fields.tx || "row",
+    pair,
     raw,
+    token0Address: fields.token0 || "",
+    token0Symbol,
+    token1Address: fields.token1 || "",
+    token1Symbol,
     tx: fields.tx || EMPTY_VALUE,
     usd: fields.usd || EMPTY_VALUE,
   };

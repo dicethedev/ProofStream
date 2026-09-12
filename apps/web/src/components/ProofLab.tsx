@@ -20,6 +20,7 @@ import { GuideOverlay } from "./proof-lab/GuideOverlay";
 import { IntroModal } from "./proof-lab/IntroModal";
 import { ProofLabHeader } from "./proof-lab/ProofLabHeader";
 import { ProofLabTabs } from "./proof-lab/ProofLabTabs";
+import { ProofToast, type ProofToastMessage } from "./proof-lab/ProofToast";
 import { QueryPanel } from "./proof-lab/QueryPanel";
 import { ReceiptPanel } from "./proof-lab/ReceiptPanel";
 
@@ -37,7 +38,9 @@ export function ProofLab() {
   const [wallet, setWallet] = useState(import.meta.env.VITE_DEFAULT_WALLET ?? "");
   const [pool, setPool] = useState(import.meta.env.VITE_DEFAULT_POOL ?? DEFAULT_STABLE_POOL);
   const [mode, setMode] = useState<GraphFetchMode>("recent");
-  const [queryText, setQueryText] = useState(() => queryTemplate("recent", DEFAULT_STABLE_POOL));
+  const [queryText, setQueryText] = useState(() => (
+    queryTemplate("recent", DEFAULT_STABLE_POOL, DEFAULT_PRESET.schema)
+  ));
   const [jsonText, setJsonText] = useState(sampleJson());
   const [activeTab, setActiveTab] = useState<LabTab>("query");
   const [clientClaim, setClientClaim] = useState("tx:alice->bob:100");
@@ -45,6 +48,8 @@ export function ProofLab() {
   const [message, setMessage] = useState("Edit rows or fetch live data, then generate a proof.");
   const [showIntro, setShowIntro] = useState(true);
   const [guideStep, setGuideStep] = useState(0);
+  const [hasLoadedQuery, setHasLoadedQuery] = useState(false);
+  const [toast, setToast] = useState<ProofToastMessage | null>(null);
   const queryConsoleRef = useRef<HTMLDivElement>(null);
 
   const rows = useMemo(
@@ -65,7 +70,23 @@ export function ProofLab() {
     setClientClaim(selectedLeaf);
   }, [selectedLeaf]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timeout = window.setTimeout(() => setToast(null), 5200);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
+
   async function loadGraphData() {
+    if (!apiKey.trim()) {
+      notify("error", "Graph API key required", "Paste a Graph Gateway API key before fetching live DEX activity.");
+      return;
+    }
+
+    if (!subgraphId.trim() && !endpoint.trim()) {
+      notify("error", "Choose a data source", "Select a DEX preset or provide a compatible subgraph endpoint.");
+      return;
+    }
+
     setLoading(true);
     setMessage(`Fetching ${sourceLabel(mode).toLowerCase()} from The Graph...`);
 
@@ -76,6 +97,7 @@ export function ProofLab() {
         mode,
         pool,
         query: queryText,
+        schema: selectedPreset.schema,
         subgraphId,
         wallet,
       });
@@ -89,26 +111,38 @@ export function ProofLab() {
         setWallet(result.suggestedWallet);
       }
       setSelectedRow(0);
+      setHasLoadedQuery(true);
       setActiveTab("query");
       setGuideStep(1);
       setMessage(
         `Loaded ${result.rows.length} ${sourceLabel(mode).toLowerCase()}. Pool and wallet filters were filled from the first row.`,
       );
+      notify("success", "Live data loaded", `${result.rows.length} DEX activities are ready to inspect and seal.`);
       scrollToQueryConsole();
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Unknown error";
       setMessage(`${detail} The demo rows are still editable, so you can keep testing proofs.`);
+      notify("error", "Query could not be completed", detail);
     } finally {
       setLoading(false);
     }
   }
 
   function useJsonAsRows() {
+    if (!hasLoadedQuery) {
+      notify("info", "Run the live query first", "Fetch data from The Graph before converting its JSON response into readable rows.");
+      return;
+    }
+
     try {
-      const rowsFromJson = normalizeGraphRows(JSON.parse(jsonText) as GraphResponse);
+      const rowsFromJson = normalizeGraphRows(
+        JSON.parse(jsonText) as GraphResponse,
+        selectedPreset.schema,
+      );
 
       if (!rowsFromJson.length) {
         setMessage("That JSON has no swaps array to convert. Keep editing or run a query first.");
+        notify("error", "No activity rows found", "The JSON response needs a non-empty data.swaps array.");
         return;
       }
 
@@ -117,8 +151,10 @@ export function ProofLab() {
       setActiveTab("dataset");
       setGuideStep(2);
       setMessage(`Converted ${rowsFromJson.length} JSON swaps into receipt rows.`);
+      notify("success", "Readable dataset created", `${rowsFromJson.length} activities can now be selected for a receipt.`);
     } catch {
       setMessage("The JSON is not valid yet. Fix it, then convert again.");
+      notify("error", "JSON needs attention", "Fix the JSON syntax, then try converting it again.");
     }
   }
 
@@ -128,12 +164,16 @@ export function ProofLab() {
     setPresetId(nextPreset.id);
     setSubgraphId(nextPreset.subgraphId);
     setEndpoint(graphEndpointTemplate(nextPreset.subgraphId));
+    setQueryText(queryTemplate(mode, pool, nextPreset.schema));
+    setHasLoadedQuery(false);
+    setMessage(`${nextPreset.name} on ${nextPreset.network} is ready. Add your API key and run the query.`);
   }
 
   function updateSubgraphId(value: string) {
     setSubgraphId(value);
     setEndpoint(graphEndpointTemplate(value));
     setPresetId(CUSTOM_PRESET_ID);
+    setHasLoadedQuery(false);
   }
 
   function handleGuideNext() {
@@ -184,14 +224,22 @@ export function ProofLab() {
     });
   }
 
+  function notify(tone: ProofToastMessage["tone"], title: string, toastMessage: string) {
+    setToast({ id: Date.now(), message: toastMessage, title, tone });
+  }
+
   return (
     <section className="section proof-lab-v2" id="lab">
       {showIntro && <IntroModal onClose={() => setShowIntro(false)} />}
+      {toast && <ProofToast key={toast.id} toast={toast} onClose={() => setToast(null)} />}
 
       <header className="proof-lab-v2-heading" data-reveal>
         <div>
           <p className="eyebrow">Live Proof Playground</p>
-          <h2>Turn live DEX activity into a proof you can inspect.</h2>
+          <h2>
+            <span>Turn live DEX activity into</span>
+            <span>a proof you can inspect.</span>
+          </h2>
           <p>
             Start with indexed blockchain data, read every returned record, and
             verify one activity without depending on the source database.
@@ -231,6 +279,7 @@ export function ProofLab() {
             apiKey={apiKey}
             consoleRef={queryConsoleRef}
             endpoint={endpoint}
+            hasLoadedQuery={hasLoadedQuery}
             jsonText={jsonText}
             loading={loading}
             message={message}
@@ -258,8 +307,10 @@ export function ProofLab() {
         {activeTab === "dataset" && (
           <DatasetPanel
             message={message}
+            network={selectedPreset.network}
             rows={rows}
             rowsText={rowsText}
+            schema={selectedPreset.schema}
             selectedRow={selectedRow}
             onRowsTextChange={setRowsText}
             onSelectedRowChange={setSelectedRow}
@@ -274,8 +325,10 @@ export function ProofLab() {
         {activeTab === "receipt" && (
           <ReceiptPanel
             clientClaim={clientClaim}
+            network={selectedPreset.network}
             proof={proof}
             rowsLength={rows.length}
+            schema={selectedPreset.schema}
             selectedLeaf={selectedLeaf}
             selectedRow={selectedRow}
             verification={verification}
@@ -310,8 +363,14 @@ function sampleJson() {
             id: "0xtxhash",
             blockNumber: "25947441",
           },
-          token0: { symbol: "USDC" },
-          token1: { symbol: "USDT" },
+          token0: {
+            id: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            symbol: "USDC",
+          },
+          token1: {
+            id: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+            symbol: "USDT",
+          },
         },
       ],
     },

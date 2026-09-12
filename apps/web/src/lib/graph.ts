@@ -1,4 +1,5 @@
 export type GraphFetchMode = "recent" | "pool" | "wallet";
+export type GraphSchema = "sushiswap-v3" | "uniswap-v3";
 
 export type FetchGraphEventsInput = {
   apiKey: string;
@@ -8,6 +9,7 @@ export type FetchGraphEventsInput = {
   subgraphId: string;
   wallet: string;
   pool: string;
+  schema: GraphSchema;
 };
 
 export type GraphFetchResult = {
@@ -38,17 +40,25 @@ export async function fetchGraphEvents(input: FetchGraphEventsInput): Promise<Gr
   return {
     endpoint,
     json: data,
-    rows: normalizeGraphRows(data),
-    suggestedPool: swaps[0]?.pool?.id ?? "",
-    suggestedWallet: swaps[0]?.origin ?? "",
+    rows: normalizeGraphRows(data, input.schema),
+    suggestedPool: swapPool(swaps[0]),
+    suggestedWallet: swapWallet(swaps[0]),
   };
 }
 
-export function normalizeGraphRows(data: GraphResponse): string[] {
-  return (data.data?.swaps ?? []).map(formatSwapRow);
+export function normalizeGraphRows(data: GraphResponse, schema: GraphSchema = "uniswap-v3"): string[] {
+  return (data.data?.swaps ?? []).map((swap) => formatSwapRow(swap, schema));
 }
 
-export function queryTemplate(mode: GraphFetchMode, pool: string): string {
+export function queryTemplate(
+  mode: GraphFetchMode,
+  pool: string,
+  schema: GraphSchema = "uniswap-v3",
+): string {
+  if (schema === "sushiswap-v3") {
+    return sushiQueryTemplate(mode, pool);
+  }
+
   if (mode === "wallet") {
     return `query ProofStreamWalletEvents($wallet: Bytes!) {
   swaps(
@@ -107,7 +117,7 @@ export function graphEndpointTemplate(subgraphId: string) {
 }
 
 function graphRequest(input: FetchGraphEventsInput): GraphRequest {
-  const query = input.query.trim() || queryTemplate(input.mode, input.pool);
+  const query = input.query.trim() || queryTemplate(input.mode, input.pool, input.schema);
 
   if (input.mode === "wallet") {
     assertHex(input.wallet, "wallet address");
@@ -174,7 +184,7 @@ async function fetchGraphql(
   const data = await response.json() as GraphResponse;
 
   if (data.errors?.length) {
-    throw new Error(data.errors[0]?.message ?? "The Graph returned an error.");
+    throw new Error(humanizeGraphError(data.errors[0]?.message ?? "The Graph returned an error."));
   }
 
   return data;
@@ -196,15 +206,83 @@ function delay(ms: number) {
   });
 }
 
-function formatSwapRow(swap: GraphSwap) {
+function formatSwapRow(swap: GraphSwap, schema: GraphSchema) {
+  if (schema === "sushiswap-v3" && isSushiSwap(swap)) {
+    return [
+      `swap:${swap.tokenIn.symbol}/${swap.tokenOut.symbol}`,
+      swap.tokenIn.id ? `token0:${swap.tokenIn.id}` : "",
+      swap.tokenOut.id ? `token1:${swap.tokenOut.id}` : "",
+      `origin:${swap.account.id}`,
+      `amount:${swap.amountIn}/-${swap.amountOut}`,
+      `usd:${swap.amountInUSD || swap.amountOutUSD || "unknown"}`,
+      `tx:${swap.hash}`,
+      `block:${swap.blockNumber}`,
+    ].filter(Boolean).join(" | ");
+  }
+
+  if (!isUniswapSwap(swap)) {
+    throw new Error("The returned swap format does not match the selected DEX preset.");
+  }
+
   return [
     `swap:${swap.token0.symbol}/${swap.token1.symbol}`,
+    swap.token0.id ? `token0:${swap.token0.id}` : "",
+    swap.token1.id ? `token1:${swap.token1.id}` : "",
     `origin:${swap.origin}`,
     `amount:${swap.amount0}/${swap.amount1}`,
     `usd:${swap.amountUSD ?? "unknown"}`,
     `tx:${swap.transaction.id}`,
     `block:${swap.transaction.blockNumber}`,
-  ].join(" | ");
+  ].filter(Boolean).join(" | ");
+}
+
+function swapPool(swap: GraphSwap | undefined) {
+  return swap?.pool?.id ?? "";
+}
+
+function swapWallet(swap: GraphSwap | undefined) {
+  if (!swap) return "";
+  return isSushiSwap(swap) ? swap.account.id : swap.origin;
+}
+
+function isSushiSwap(swap: GraphSwap): swap is SushiGraphSwap {
+  return "tokenIn" in swap;
+}
+
+function isUniswapSwap(swap: GraphSwap): swap is UniswapGraphSwap {
+  return "token0" in swap;
+}
+
+function humanizeGraphError(message: string) {
+  if (/type [`"]?Query[`"]? has no field [`"]?swaps/i.test(message)) {
+    return "This subgraph does not expose a compatible swaps feed. Choose a verified preset or provide a swaps-compatible custom subgraph.";
+  }
+
+  if (/has no field/i.test(message)) {
+    return "This subgraph uses a different data shape. Choose a verified preset so ProofStream can build the correct query automatically.";
+  }
+
+  return message;
+}
+
+function sushiQueryTemplate(mode: GraphFetchMode, pool: string) {
+  let filter = "";
+  if (mode === "wallet") {
+    filter = "    where: { account: $wallet }\n";
+  } else if (mode === "pool") {
+    filter = `    where: { pool: "${pool.toLowerCase()}" }\n`;
+  }
+  const declaration = mode === "wallet" ? "($wallet: String!)" : "";
+
+  return `query ProofStreamSushiEvents${declaration} {
+  swaps(
+    first: 10
+    orderBy: timestamp
+    orderDirection: desc
+${filter}  ) {
+${indent(SUSHI_SWAP_FIELDS.trim(), 4)}
+  }
+}`;
 }
 
 function indent(value: string, spaces: number) {
@@ -228,9 +306,35 @@ const SWAP_FIELDS = `
     blockNumber
   }
   token0 {
+    id
     symbol
   }
   token1 {
+    id
+    symbol
+  }
+`;
+
+const SUSHI_SWAP_FIELDS = `
+  id
+  hash
+  account {
+    id
+  }
+  pool {
+    id
+  }
+  blockNumber
+  amountIn
+  amountOut
+  amountInUSD
+  amountOutUSD
+  tokenIn {
+    id
+    symbol
+  }
+  tokenOut {
+    id
     symbol
   }
 `;
@@ -247,7 +351,7 @@ export type GraphResponse = {
   };
 };
 
-type GraphSwap = {
+type UniswapGraphSwap = {
   id: string;
   sender: string;
   recipient: string;
@@ -260,6 +364,22 @@ type GraphSwap = {
     id: string;
     blockNumber: string;
   };
-  token0: { symbol: string };
-  token1: { symbol: string };
+  token0: { id?: string; symbol: string };
+  token1: { id?: string; symbol: string };
 };
+
+type SushiGraphSwap = {
+  id: string;
+  hash: string;
+  account: { id: string };
+  pool: { id: string };
+  blockNumber: string;
+  amountIn: string;
+  amountOut: string;
+  amountInUSD: string;
+  amountOutUSD: string;
+  tokenIn: { id?: string; symbol: string };
+  tokenOut: { id?: string; symbol: string };
+};
+
+type GraphSwap = SushiGraphSwap | UniswapGraphSwap;

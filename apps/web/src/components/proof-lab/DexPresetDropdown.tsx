@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { LuCheck, LuChevronDown, LuSlidersHorizontal } from "react-icons/lu";
 import type { DexPreset } from "../../data/dexPresets";
 import { DEX_PRESETS, dexLogoUrl } from "../../data/dexPresets";
 import { dexInitials } from "../../utils/text";
@@ -54,11 +55,12 @@ export function DexPresetDropdown({ id, selectedPreset, onChange }: DexPresetDro
         aria-haspopup="listbox"
         onClick={() => setOpen((current) => !current)}
       >
+        <PresetIcon preset={selectedPreset} />
         <span>
           <b>{selectedPreset.name}</b>
           <small>{selectedPreset.network}</small>
         </span>
-        <i aria-hidden="true" />
+        <LuChevronDown className={open ? "open" : undefined} aria-hidden="true" />
       </button>
 
       {open && (
@@ -79,6 +81,7 @@ export function DexPresetDropdown({ id, selectedPreset, onChange }: DexPresetDro
                 <small>{preset.network}</small>
                 <em>{preset.description}</em>
               </span>
+              {selectedPreset.id === preset.id ? <LuCheck className="dex-selected-check" aria-hidden="true" /> : null}
             </button>
           ))}
 
@@ -90,12 +93,13 @@ export function DexPresetDropdown({ id, selectedPreset, onChange }: DexPresetDro
               className={`custom-option${selectedPreset.id === customPreset.id ? " active" : ""}`}
               onClick={() => choosePreset(customPreset.id)}
             >
-              <PresetIcon preset={customPreset} />
+              <span className="dex-option-icon" aria-hidden="true"><LuSlidersHorizontal /></span>
               <span>
                 <b>{customPreset.name}</b>
                 <small>Paste your own subgraph ID</small>
                 <em>{customPreset.description}</em>
               </span>
+              {selectedPreset.id === customPreset.id ? <LuCheck className="dex-selected-check" aria-hidden="true" /> : null}
             </button>
           )}
         </div>

@@ -5,6 +5,7 @@ export type DexPreset = {
   subgraphId: string;
   logoDomain: string;
   description: string;
+  schema: "sushiswap-v3" | "uniswap-v3";
   custom?: boolean;
 };
 
@@ -16,6 +17,7 @@ export const DEX_PRESETS: DexPreset[] = [
     subgraphId: "5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV",
     logoDomain: "uniswap.org",
     description: "Best default. Recent swaps, pool activity, and wallet-origin queries.",
+    schema: "uniswap-v3",
   },
   {
     id: "uniswap-v3-base",
@@ -24,30 +26,61 @@ export const DEX_PRESETS: DexPreset[] = [
     subgraphId: "43Hwfi3dJSoGpyas9VwNoDAv55yjgGrPpNSmbQZArzMG",
     logoDomain: "uniswap.org",
     description: "Base swaps from a live Uniswap V3 deployment on The Graph.",
+    schema: "uniswap-v3",
   },
   {
     id: "uniswap-v3-arbitrum",
     name: "Uniswap V3",
     network: "Arbitrum One",
-    subgraphId: "Fo8QBLpEGfXHWkGMD3jSM4vVLk4JxvxxQD3v3U4fsrbh",
+    subgraphId: "FbCGRftH4a3yZugY7TnbYgPJVEv2LvMT6oF1fxPe9aJM",
     logoDomain: "uniswap.org",
     description: "Arbitrum V3 swaps for lower-cost L2 activity demos.",
+    schema: "uniswap-v3",
   },
   {
     id: "uniswap-v3-optimism",
     name: "Uniswap V3",
     network: "Optimism",
-    subgraphId: "49LkWjoVKd3bM9ZrMdFgYkjaCuVj4ExZttQi6XfbcPpG",
+    subgraphId: "Cghf4LfVqPiFw6fp6Y5X5Ubc8UpmUhSfJL82zwiBFLaj",
     logoDomain: "uniswap.org",
     description: "Optimism swaps using the same V3-style schema.",
+    schema: "uniswap-v3",
   },
   {
     id: "uniswap-v3-polygon",
     name: "Uniswap V3",
     network: "Polygon",
-    subgraphId: "5KKEX1Czc4eP3KA13ivn6dDARaG6NkotHMabwK8k32Px",
+    subgraphId: "3hCPRGf4z88VC5rsBKU5AA9FBBq5nF3jbKJG7VZCbhjm",
     logoDomain: "uniswap.org",
     description: "Polygon swaps for high-volume DEX activity demos.",
+    schema: "uniswap-v3",
+  },
+  {
+    id: "uniswap-v3-bnb",
+    name: "Uniswap V3",
+    network: "BNB Chain",
+    subgraphId: "G5MUbSBM7Nsrm9tH2tGQUiAF4SZDGf2qeo1xPLYjKr7K",
+    logoDomain: "uniswap.org",
+    description: "Live Uniswap V3 swap activity indexed from BNB Chain.",
+    schema: "uniswap-v3",
+  },
+  {
+    id: "uniswap-v3-celo",
+    name: "Uniswap V3",
+    network: "Celo",
+    subgraphId: "ESdrTJ3twMwWVoQ1hUE2u7PugEHX3QkenudD6aXCkDQ4",
+    logoDomain: "uniswap.org",
+    description: "Celo swap activity from a verified V3-compatible schema.",
+    schema: "uniswap-v3",
+  },
+  {
+    id: "uniswap-v3-avalanche",
+    name: "Uniswap V3",
+    network: "Avalanche",
+    subgraphId: "GVH9h9KZ9CqheUEL93qMbq7QwgoBu32QXQDPR6bev4Eo",
+    logoDomain: "uniswap.org",
+    description: "Avalanche swaps from The Graph decentralized network.",
+    schema: "uniswap-v3",
   },
   {
     id: "sushiswap-v3-ethereum",
@@ -56,22 +89,16 @@ export const DEX_PRESETS: DexPreset[] = [
     subgraphId: "2tGWMrDha4164KkFAfkU3rDCtuxGb4q1emXmFdLLzJ8x",
     logoDomain: "sushi.com",
     description: "Ethereum SushiSwap V3 swaps from The Graph Explorer.",
+    schema: "sushiswap-v3",
   },
   {
-    id: "pancakeswap-v3-ethereum",
-    name: "PancakeSwap V3",
-    network: "Ethereum",
-    subgraphId: "9opY17WnEPD4REcC43yHycQthSeUMQE26wyoeMjZTLEx",
-    logoDomain: "pancakeswap.finance",
-    description: "Ethereum PancakeSwap V3 swaps using a Uniswap-style schema.",
-  },
-  {
-    id: "pancakeswap-v3-bnb",
-    name: "PancakeSwap V3",
-    network: "BNB Chain",
-    subgraphId: "78EUqzJmEVJsAKvWghn7qotf9LVGqcTQxJhT5z84ZmgJ",
-    logoDomain: "pancakeswap.finance",
-    description: "BNB Chain V3 swaps for testing another DEX network.",
+    id: "aerodrome-base",
+    name: "Aerodrome",
+    network: "Base",
+    subgraphId: "GENunSHWLBXm59mBSgPzQ8metBEp9YDfdqwFr91Av1UM",
+    logoDomain: "aerodrome.finance",
+    description: "High-volume Aerodrome swaps from its full Base subgraph.",
+    schema: "uniswap-v3",
   },
   {
     id: "custom",
@@ -80,6 +107,7 @@ export const DEX_PRESETS: DexPreset[] = [
     subgraphId: "",
     logoDomain: "",
     description: "Paste any swaps-compatible subgraph ID from The Graph Explorer.",
+    schema: "uniswap-v3",
     custom: true,
   },
 ];

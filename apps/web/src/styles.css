@@ -382,6 +382,7 @@
   }
 }
 
+
 @media (max-width: 480px) {
   .how-card-heading h2,
   .trust-heading h2 {
@@ -9735,8 +9736,8 @@ a:focus-visible {
 
 .proof-lab-v2-heading {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 410px);
-  gap: clamp(40px, 8vw, 120px);
+  grid-template-columns: minmax(0, 1.65fr) minmax(260px, 340px);
+  gap: clamp(32px, 5vw, 72px);
   align-items: end;
   margin-bottom: 52px;
 }
@@ -9752,13 +9753,18 @@ a:focus-visible {
 }
 
 .proof-lab-v2-heading h2 {
-  max-width: 780px;
+  max-width: none;
   margin: 0;
   color: #000 !important;
-  font-size: clamp(42px, 5.5vw, 76px);
+  font-size: clamp(44px, 4.4vw, 64px);
   font-weight: 700;
   line-height: 0.98;
   letter-spacing: -0.06em;
+}
+
+.proof-lab-v2-heading h2 > span {
+  display: block;
+  white-space: nowrap;
 }
 
 .proof-lab-v2-heading > div > p:last-child {
@@ -11049,6 +11055,17 @@ a:focus-visible {
   }
 }
 
+@media (max-width: 1180px) {
+  .proof-lab-v2-heading {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .proof-lab-v2-heading aside {
+    max-width: 680px;
+  }
+}
+
 @media (max-width: 760px) {
   .proof-lab-v2 {
     padding: 80px 14px 100px;
@@ -11065,6 +11082,10 @@ a:focus-visible {
 
   .proof-lab-v2-heading {
     gap: 28px;
+  }
+
+  .proof-lab-v2-heading h2 > span {
+    white-space: normal;
   }
 
   .proof-lab-v2 .subgraph-header {
@@ -11163,5 +11184,750 @@ a:focus-visible {
   .proof-lab-v2 .receipt-checked-row dl div:last-child,
   .proof-lab-v2 .receipt-check-explainer article:last-child {
     border-bottom: 0;
+  }
+}
+
+/* Final Proof Lab overrides must remain after the legacy theme rules. */
+.proof-lab-v2 .realtime-pipeline b,
+.proof-lab-v2 .realtime-pipeline i,
+.proof-lab-v2 .workflow-guide > div > span {
+  width: auto !important;
+  height: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.proof-lab-v2 .realtime-pipeline b,
+.proof-lab-v2 .realtime-pipeline i {
+  color: #2e2e36 !important;
+}
+
+.proof-lab-v2 .workflow-guide > div > span {
+  display: block !important;
+  color: #8a8a99 !important;
+}
+
+.proof-lab-v2 .query-source-setup,
+.proof-lab-v2 .query-source-form,
+.proof-lab-v2 .query-primary-fields,
+.proof-lab-v2 .query-primary-fields label {
+  overflow: visible !important;
+}
+
+.proof-lab-v2 .query-source-form {
+  position: relative;
+  z-index: 5;
+}
+
+.proof-lab-v2 .dex-dropdown {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.proof-lab-v2 .dex-dropdown-trigger {
+  display: grid !important;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  width: 100% !important;
+  min-height: 58px;
+  gap: 11px;
+  align-items: center;
+  border: 1px solid #d5d5e2 !important;
+  border-radius: 14px !important;
+  padding: 9px 13px !important;
+  background: #fff !important;
+  color: #000 !important;
+  text-align: left;
+}
+
+.proof-lab-v2 .dex-dropdown-trigger:hover,
+.proof-lab-v2 .dex-dropdown-trigger:focus-visible {
+  border-color: #000 !important;
+  background: #f4f4f7 !important;
+}
+
+.proof-lab-v2 .dex-dropdown-trigger > span:nth-child(2),
+.proof-lab-v2 .dex-dropdown-menu button > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.proof-lab-v2 .dex-dropdown-trigger b,
+.proof-lab-v2 .dex-dropdown-trigger small {
+  overflow: hidden;
+  color: #000 !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proof-lab-v2 .dex-dropdown-trigger small {
+  color: #535361 !important;
+}
+
+.proof-lab-v2 .dex-dropdown-trigger > svg {
+  color: #000 !important;
+  transition: transform 180ms ease;
+}
+
+.proof-lab-v2 .dex-dropdown-trigger > svg.open {
+  transform: rotate(180deg);
+}
+
+.proof-lab-v2 .dex-option-icon {
+  display: grid !important;
+  width: 36px !important;
+  height: 36px !important;
+  flex: 0 0 36px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #d5d5e2 !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  background: #fff !important;
+  color: #000 !important;
+}
+
+.proof-lab-v2 .dex-option-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.proof-lab-v2 .dex-dropdown-menu {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  right: 0 !important;
+  left: auto !important;
+  z-index: 1000 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(680px, calc(100vw - 72px)) !important;
+  max-height: 430px;
+  gap: 7px;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  border: 1px solid #d5d5e2 !important;
+  border-radius: 18px !important;
+  padding: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 16%) !important;
+}
+
+.proof-lab-v2 .dex-dropdown-menu > p,
+.proof-lab-v2 .dex-dropdown-menu .custom-option {
+  grid-column: 1 / -1;
+}
+
+.proof-lab-v2 .dex-dropdown-menu button {
+  display: grid !important;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  min-width: 0;
+  min-height: 92px;
+  gap: 11px;
+  align-items: center;
+  border: 1px solid #d5d5e2 !important;
+  border-radius: 14px !important;
+  padding: 13px !important;
+  background: #fff !important;
+  color: #000 !important;
+}
+
+.proof-lab-v2 .dex-dropdown-menu button:hover {
+  border-color: #8a8a99 !important;
+  background: #f4f4f7 !important;
+  color: #000 !important;
+}
+
+.proof-lab-v2 .dex-dropdown-menu button.active {
+  border-color: #000 !important;
+  background: #000 !important;
+  color: #fff !important;
+}
+
+.proof-lab-v2 .dex-dropdown-menu b,
+.proof-lab-v2 .dex-dropdown-menu small,
+.proof-lab-v2 .dex-dropdown-menu em {
+  color: inherit !important;
+}
+
+.proof-lab-v2 .dex-dropdown-menu button:not(.active) small,
+.proof-lab-v2 .dex-dropdown-menu button:not(.active) em {
+  color: #535361 !important;
+}
+
+.proof-lab-v2 .query-run-primary {
+  width: auto !important;
+  min-width: 220px;
+  border-color: #000 !important;
+  background: #000 !important;
+  color: #fff !important;
+}
+
+.proof-lab-v2 .query-run-primary:hover,
+.proof-lab-v2 .query-run-primary:focus-visible {
+  background: #2e2e36 !important;
+  color: #fff !important;
+}
+
+.proof-lab-v2 .graph-console {
+  grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr) !important;
+  max-width: 100%;
+}
+
+.proof-lab-v2 .console-pane,
+.proof-lab-v2 .console-toolbar,
+.proof-lab-v2 .code-editor,
+.proof-lab-v2 .json-panel {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.proof-lab-v2 .console-toolbar > span,
+.proof-lab-v2 .console-toolbar button {
+  white-space: nowrap;
+}
+
+.proof-lab-v2 .json-panel {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.proof-lab-v2 .receipt-developer-details,
+.proof-lab-v2 .receipt-developer-details summary,
+.proof-lab-v2 .receipt-developer-details b,
+.proof-lab-v2 .receipt-developer-details p,
+.proof-lab-v2 .receipt-developer-details code {
+  color: #000 !important;
+}
+
+.proof-lab-v2 .receipt-developer-details .term-list article,
+.proof-lab-v2 .receipt-developer-details .proof-step {
+  border-color: #d5d5e2 !important;
+  background: #fff !important;
+}
+
+.proof-lab-v2 .receipt-developer-details .term-list p {
+  color: #535361 !important;
+}
+
+@media (max-width: 1100px) {
+  .proof-lab-v2 .graph-console {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .proof-lab-v2 .dex-dropdown-menu {
+    right: auto !important;
+    left: 0 !important;
+    grid-template-columns: 1fr;
+    width: min(100%, calc(100vw - 52px)) !important;
+  }
+
+  .proof-lab-v2 .dex-dropdown-menu .custom-option {
+    grid-column: auto;
+  }
+
+  .proof-lab-v2 .query-run-primary {
+    width: 100% !important;
+  }
+}
+
+.proof-lab-v2 .receipt-downloads {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+  margin-top: 12px;
+  border: 1px solid #d5d5e2;
+  border-radius: 18px;
+  padding: 18px;
+  background: #fff !important;
+}
+
+.proof-lab-v2 .receipt-downloads > span {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 50%;
+  background: #000 !important;
+  color: #fff !important;
+}
+
+.proof-lab-v2 .receipt-downloads b {
+  color: #000 !important;
+  font-size: 13px;
+}
+
+.proof-lab-v2 .receipt-downloads p {
+  margin: 3px 0 0;
+  color: #535361 !important;
+  font-size: 10px;
+}
+
+.proof-lab-v2 .receipt-downloads button {
+  display: inline-flex;
+  min-height: 40px;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: #fff !important;
+  color: #000 !important;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.proof-lab-v2 .receipt-downloads button:hover {
+  background: #000 !important;
+  color: #fff !important;
+}
+
+.proof-toast {
+  position: fixed;
+  top: max(84px, calc(env(safe-area-inset-top) + 18px));
+  right: max(22px, env(safe-area-inset-right));
+  bottom: auto;
+  z-index: 9999;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 30px;
+  width: min(410px, calc(100vw - 44px));
+  min-height: 82px;
+  gap: 13px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #2e2e36;
+  border-radius: 18px;
+  padding: 15px 14px 17px 15px;
+  background: #000;
+  color: #fff;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 22%);
+  isolation: isolate;
+  animation: proof-toast-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.proof-toast-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+}
+
+.proof-toast-icon svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 2.2;
+}
+
+.proof-toast-copy {
+  min-width: 0;
+}
+
+.proof-toast b {
+  display: block;
+  color: #fff !important;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.proof-toast p {
+  margin: 5px 0 0;
+  color: #d5d5e2 !important;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.proof-toast button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #535361;
+  border-radius: 50%;
+  padding: 0;
+  background: #2e2e36;
+  color: #d5d5e2;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.proof-toast button:hover,
+.proof-toast button:focus-visible {
+  background: #fff;
+  color: #000;
+  outline: none;
+}
+
+.proof-toast-timer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #fff;
+  transform-origin: left;
+  animation: proof-toast-timer 5.2s linear both;
+}
+
+@keyframes proof-toast-enter {
+  from { opacity: 0; transform: translate3d(18px, -6px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes proof-toast-timer {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@media (max-width: 1100px) {
+  .proof-lab-v2 .receipt-downloads {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .proof-lab-v2 .receipt-downloads {
+    grid-template-columns: 1fr;
+  }
+
+  .proof-lab-v2 .receipt-downloads > span {
+    display: none;
+  }
+
+  .proof-toast {
+    top: max(72px, calc(env(safe-area-inset-top) + 12px));
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proof-toast,
+  .proof-toast-timer {
+    animation: none;
+  }
+}
+
+/* Keep the live-query console legible against its intentionally dark canvas. */
+.proof-lab-v2 .console-toolbar {
+  min-height: 64px;
+  gap: 14px;
+  padding: 0 18px;
+  background: #000 !important;
+  color: #fff !important;
+}
+
+.proof-lab-v2 .console-toolbar-title {
+  display: inline-flex;
+  min-width: 0;
+  gap: 9px;
+  align-items: center;
+  color: #fff !important;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.proof-lab-v2 .console-toolbar-title svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: #d5d5e2 !important;
+}
+
+.proof-lab-v2 .console-toolbar .console-toolbar-action {
+  display: inline-flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #535361 !important;
+  border-radius: 999px;
+  padding: 0 12px !important;
+  background: #16161a !important;
+  color: #fff !important;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.proof-lab-v2 .console-toolbar .console-toolbar-action:hover,
+.proof-lab-v2 .console-toolbar .console-toolbar-action:focus-visible {
+  border-color: #fff !important;
+  background: #fff !important;
+  color: #000 !important;
+  outline: none;
+}
+
+.proof-lab-v2 .console-toolbar .console-toolbar-action svg {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+}
+
+.proof-lab-v2 .json-result-summary {
+  gap: 8px;
+  padding: 12px;
+  background: #000 !important;
+}
+
+.proof-lab-v2 .json-result-summary article,
+.proof-lab-v2 .json-result-summary article:last-child {
+  min-width: 0;
+  border: 1px solid #2e2e36 !important;
+  border-radius: 12px;
+  padding: 12px 13px;
+  background: #16161a !important;
+}
+
+.proof-lab-v2 .json-result-summary span {
+  color: #8a8a99 !important;
+}
+
+.proof-lab-v2 .json-result-summary b {
+  overflow: hidden;
+  color: #fff !important;
+  font-size: 11px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .proof-lab-v2 .console-toolbar {
+    min-height: 58px;
+    padding: 0 12px;
+  }
+
+  .proof-lab-v2 .console-toolbar-title {
+    font-size: 10px;
+  }
+
+  .proof-lab-v2 .console-toolbar .console-toolbar-action span {
+    display: none;
+  }
+
+  .proof-lab-v2 .console-toolbar .console-toolbar-action {
+    width: 34px;
+    padding: 0 !important;
+  }
+
+  .proof-lab-v2 .json-result-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+.proof-lab-v2 .token-pair-avatar {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding-left: 8px;
+}
+
+.proof-lab-v2 .token-avatar {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #f4f4f7 !important;
+  color: #000 !important;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.proof-lab-v2 .token-avatar + .token-avatar {
+  margin-left: -9px;
+}
+
+.proof-lab-v2 .token-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.proof-lab-v2 .dataset-activity.selected .token-avatar {
+  border-color: #000;
+  background: #fff !important;
+}
+
+.proof-lab-v2 .dataset-activity-pair-name {
+  display: flex;
+  min-width: 0;
+  gap: 10px;
+  align-items: center;
+}
+
+.proof-lab-v2 .dataset-activity-pair-name > b {
+  min-width: 0;
+}
+
+.proof-lab-v2 .receipt-checked-asset {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.proof-lab-v2 .receipt-checked-asset .token-avatar {
+  width: 38px;
+  height: 38px;
+  font-size: 9px;
+}
+
+.proof-lab-v2 .receipt-checked-asset .token-pair-avatar {
+  padding-left: 11px;
+}
+
+.proof-lab-v2 .receipt-checked-asset .token-avatar + .token-avatar {
+  margin-left: -12px;
+}
+
+.proof-lab-v2 .readable-value {
+  position: relative;
+  display: block;
+  min-width: 0;
+  width: fit-content;
+  max-width: 100%;
+  color: inherit !important;
+  cursor: help;
+}
+
+.proof-lab-v2 .readable-value > span {
+  display: block;
+  overflow: hidden;
+  color: inherit !important;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proof-lab-v2 .readable-value::after {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: min(360px, 72vw);
+  border: 1px solid #535361;
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: #000;
+  color: #fff;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 18%);
+  content: attr(data-tooltip);
+  font: 600 10px/1.5 "Suisse Intl", system-ui, sans-serif;
+  opacity: 0;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 140ms ease, transform 140ms ease;
+  white-space: pre-line;
+}
+
+.proof-lab-v2 .readable-value:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.proof-lab-v2 .dataset-activity:hover {
+  position: relative;
+  z-index: 2;
+}
+
+.proof-lab-v2 .receipt-checked-row dd .readable-value > span {
+  font: inherit;
+}
+
+.proof-lab-v2 .console-toolbar-title > span,
+.proof-lab-v2 .console-toolbar .console-toolbar-action > span {
+  color: #fff !important;
+}
+
+.proof-lab-v2 .console-toolbar .console-toolbar-action:hover > span,
+.proof-lab-v2 .console-toolbar .console-toolbar-action:focus-visible > span {
+  color: #000 !important;
+}
+
+.proof-lab-v2 .subgraph-id-meta {
+  min-width: min(300px, 100%);
+}
+
+.proof-lab-v2 .subgraph-id-value {
+  display: flex;
+  min-width: 0;
+  gap: 7px;
+  align-items: center;
+}
+
+.proof-lab-v2 .subgraph-id-value code {
+  min-width: 0;
+  overflow: hidden;
+  color: #fff !important;
+  font: 650 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proof-lab-v2 .subgraph-id-value button,
+.proof-lab-v2 .subgraph-id-value a {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #535361;
+  border-radius: 50%;
+  padding: 0;
+  background: #16161a !important;
+  color: #fff !important;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.proof-lab-v2 .subgraph-id-value button:hover,
+.proof-lab-v2 .subgraph-id-value button:focus-visible,
+.proof-lab-v2 .subgraph-id-value a:hover,
+.proof-lab-v2 .subgraph-id-value a:focus-visible {
+  border-color: #fff;
+  background: #fff !important;
+  color: #000 !important;
+  outline: none;
+}
+
+.proof-lab-v2 .subgraph-id-value button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.proof-lab-v2 .subgraph-id-value svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 760px) {
+  .proof-lab-v2 .subgraph-id-meta {
+    min-width: 0;
   }
 }

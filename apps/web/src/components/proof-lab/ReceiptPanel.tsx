@@ -2,6 +2,9 @@ import {
   LuBadgeCheck,
   LuBraces,
   LuCircleX,
+  LuDownload,
+  LuFileJson,
+  LuFileText,
   LuFingerprint,
   LuRefreshCw,
   LuRoute,
@@ -9,12 +12,17 @@ import {
 } from "react-icons/lu";
 import type { BrowserProof, VerificationResult } from "../../lib/merkle";
 import { parseReceiptRow } from "../../utils/receiptRows";
+import { downloadReceiptJson, downloadReceiptPdf } from "../../utils/receiptExport";
 import { short, tamperClaim } from "../../utils/text";
+import { formatPairLabel, IndexedUsdValue, TokenAmountValue } from "./ActivityValue";
+import { TokenPairAvatar } from "./TokenPairAvatar";
 
 type ReceiptPanelProps = {
   readonly clientClaim: string;
+  readonly network: string;
   readonly proof: BrowserProof;
   readonly rowsLength: number;
+  readonly schema: "sushiswap-v3" | "uniswap-v3";
   readonly selectedLeaf: string;
   readonly selectedRow: number;
   readonly verification: VerificationResult;
@@ -23,8 +31,10 @@ type ReceiptPanelProps = {
 
 export function ReceiptPanel({
   clientClaim,
+  network,
   proof,
   rowsLength,
+  schema,
   selectedLeaf,
   selectedRow,
   verification,
@@ -32,6 +42,15 @@ export function ReceiptPanel({
 }: Readonly<ReceiptPanelProps>) {
   const row = parseReceiptRow(selectedLeaf);
   const decision = verification.valid ? "Verified" : "Rejected";
+  const receiptExport = {
+    activity: row,
+    network,
+    proof,
+    rowCount: rowsLength,
+    rowIndex: selectedRow,
+    schema,
+    valid: verification.valid,
+  };
 
   return (
     <div className="tab-panel receipt-experience">
@@ -69,17 +88,53 @@ export function ReceiptPanel({
         </dl>
       </section>
 
+      <section className="receipt-downloads" aria-label="Download receipt">
+        <span><LuDownload aria-hidden="true" /></span>
+        <div>
+          <b>Take the receipt with you</b>
+          <p>Save structured JSON for an app, or a plain-language PDF for a person.</p>
+        </div>
+        <button type="button" onClick={() => downloadReceiptJson(receiptExport)}>
+          <LuFileJson aria-hidden="true" /> Download JSON
+        </button>
+        <button type="button" onClick={() => downloadReceiptPdf(receiptExport)}>
+          <LuFileText aria-hidden="true" /> Readable PDF
+        </button>
+      </section>
+
       <section className="receipt-checked-row" aria-label="Activity checked by the browser">
         <header>
-          <div>
-            <p className="eyebrow">Activity checked</p>
-            <h4>{row.pair}</h4>
+          <div className="receipt-checked-asset">
+            <TokenPairAvatar
+              network={network}
+              token0Address={row.token0Address}
+              token0Symbol={row.token0Symbol}
+              token1Address={row.token1Address}
+              token1Symbol={row.token1Symbol}
+            />
+            <div>
+              <p className="eyebrow">Activity checked</p>
+              <h4>{formatPairLabel(row.pair)}</h4>
+            </div>
           </div>
           <span>Row #{selectedRow}</span>
         </header>
         <dl>
-          <div><dt>Indexed USD value</dt><dd>{row.usd}</dd></div>
-          <div><dt>Token amounts</dt><dd>{row.amount}</dd></div>
+          <div><dt>Indexed USD value</dt><dd><IndexedUsdValue value={row.usd} /></dd></div>
+          <div>
+            <dt>Token amounts</dt>
+            <dd>
+              <TokenAmountValue
+                amount={row.amount}
+                network={network}
+                rawUnits={schema === "sushiswap-v3"}
+                token0Address={row.token0Address}
+                token0Symbol={row.token0Symbol}
+                token1Address={row.token1Address}
+                token1Symbol={row.token1Symbol}
+              />
+            </dd>
+          </div>
           <div><dt>Transaction origin</dt><dd>{short(row.origin, 26)}</dd></div>
           <div><dt>Transaction / block</dt><dd>{short(row.tx, 22)} · {row.block}</dd></div>
         </dl>
