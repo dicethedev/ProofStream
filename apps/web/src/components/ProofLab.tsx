@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DEX_PRESETS } from "../data/dexPresets";
 import {
   DEFAULT_STABLE_POOL,
@@ -16,6 +16,7 @@ import {
 import { buildMerkleProof, verifyMerkleProof } from "../lib/merkle";
 import { sourceLabel } from "../utils/text";
 import { DatasetPanel } from "./proof-lab/DatasetPanel";
+import { GuideOverlay } from "./proof-lab/GuideOverlay";
 import { IntroModal } from "./proof-lab/IntroModal";
 import { ProofLabHeader } from "./proof-lab/ProofLabHeader";
 import { ProofLabTabs } from "./proof-lab/ProofLabTabs";
@@ -43,6 +44,8 @@ export function ProofLab() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("Edit rows or fetch live data, then generate a proof.");
   const [showIntro, setShowIntro] = useState(true);
+  const [guideStep, setGuideStep] = useState(0);
+  const queryConsoleRef = useRef<HTMLDivElement>(null);
 
   const rows = useMemo(
     () => rowsText.split("\n").map((row) => row.trim()).filter(Boolean),
@@ -87,9 +90,11 @@ export function ProofLab() {
       }
       setSelectedRow(0);
       setActiveTab("query");
+      setGuideStep(1);
       setMessage(
         `Loaded ${result.rows.length} ${sourceLabel(mode).toLowerCase()}. Pool and wallet filters were filled from the first row.`,
       );
+      scrollToQueryConsole();
     } catch (error) {
       const detail = error instanceof Error ? error.message : "Unknown error";
       setMessage(`${detail} The demo rows are still editable, so you can keep testing proofs.`);
@@ -110,6 +115,7 @@ export function ProofLab() {
       setRowsText(rowsFromJson.join("\n"));
       setSelectedRow(0);
       setActiveTab("dataset");
+      setGuideStep(2);
       setMessage(`Converted ${rowsFromJson.length} JSON swaps into receipt rows.`);
     } catch {
       setMessage("The JSON is not valid yet. Fix it, then convert again.");
@@ -130,39 +136,106 @@ export function ProofLab() {
     setPresetId(CUSTOM_PRESET_ID);
   }
 
+  function handleGuideNext() {
+    if (guideStep === 0) {
+      setActiveTab("query");
+      scrollToQueryConsole();
+      return;
+    }
+
+    if (guideStep === 1) {
+      useJsonAsRows();
+      return;
+    }
+
+    if (guideStep === 2) {
+      setActiveTab("receipt");
+      setGuideStep(3);
+      return;
+    }
+
+    setActiveTab("query");
+    setGuideStep(0);
+    scrollToQueryConsole();
+  }
+
+  function handleTabChange(tab: LabTab) {
+    setActiveTab(tab);
+
+    if (tab === "query") {
+      setGuideStep(Math.min(guideStep, 1));
+      return;
+    }
+
+    if (tab === "dataset") {
+      setGuideStep(2);
+      return;
+    }
+
+    setGuideStep(3);
+  }
+
+  function scrollToQueryConsole() {
+    window.requestAnimationFrame(() => {
+      queryConsoleRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+  }
+
   return (
-    <section className="section" id="lab">
+    <section className="section proof-lab-v2" id="lab">
       {showIntro && <IntroModal onClose={() => setShowIntro(false)} />}
 
-      <div className="section-heading">
-        <p className="eyebrow">Live proof playground</p>
-        <h2>Verify DEX activity with simple proof receipts.</h2>
-        <p>
-          Fetch swaps, pick one row, then watch the browser verify it using only
-          the row, a Merkle root, and a small proof. No database trust required.
-        </p>
-      </div>
+      <header className="proof-lab-v2-heading" data-reveal>
+        <div>
+          <p className="eyebrow">Live Proof Playground</p>
+          <h2>Turn live DEX activity into a proof you can inspect.</h2>
+          <p>
+            Start with indexed blockchain data, read every returned record, and
+            verify one activity without depending on the source database.
+          </p>
+        </div>
+        <aside>
+          <b>What does the receipt prove?</b>
+          <p>
+            It proves that the selected activity belongs to the exact dataset
+            shown here. It does not claim that an indexer can never be wrong.
+          </p>
+        </aside>
+      </header>
 
-      <div className="graph-explorer">
+      <div className="graph-explorer" data-reveal>
         <ProofLabHeader
           loading={loading}
           mode={mode}
           preset={selectedPreset}
+          rowCount={rows.length}
           subgraphId={subgraphId}
           onRun={loadGraphData}
         />
 
-        <ProofLabTabs activeTab={activeTab} onChange={setActiveTab} />
+        <ProofLabTabs activeTab={activeTab} onChange={handleTabChange} />
+
+        <GuideOverlay
+          activeTab={activeTab}
+          canUseRows={rows.length > 0}
+          loading={loading}
+          step={guideStep}
+          onNext={handleGuideNext}
+        />
 
         {activeTab === "query" && (
           <QueryPanel
             apiKey={apiKey}
+            consoleRef={queryConsoleRef}
             endpoint={endpoint}
             jsonText={jsonText}
             loading={loading}
+            message={message}
             mode={mode}
             pool={pool}
-            presetId={presetId}
             queryText={queryText}
             selectedPreset={selectedPreset}
             subgraphId={subgraphId}
@@ -191,6 +264,10 @@ export function ProofLab() {
             onRowsTextChange={setRowsText}
             onSelectedRowChange={setSelectedRow}
             onUseJsonRows={useJsonAsRows}
+            onOpenReceipt={() => {
+              setActiveTab("receipt");
+              setGuideStep(3);
+            }}
           />
         )}
 

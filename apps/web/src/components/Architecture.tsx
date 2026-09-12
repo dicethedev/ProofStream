@@ -1,30 +1,70 @@
+import {
+  LuArrowRight,
+  LuDatabase,
+  LuFingerprint,
+  LuReceiptText,
+  LuShieldCheck,
+} from "react-icons/lu";
+
 export function Architecture() {
   const steps = [
-    ["1", "Fetch live data", "Pull DEX activity from The Graph, such as swaps, pools, or wallet activity."],
-    ["2", "Seal the list", "MerkleForge turns the fetched rows into one public dataset fingerprint."],
-    ["3", "Send a receipt", "Only the selected row and a tiny proof path are sent to the client."],
-    ["4", "Verify anywhere", "A browser, wallet, or agent checks the receipt without downloading the full dataset."],
+    {
+      title: "Fetch live rows",
+      body: "Pull fresh swaps, pool activity, or wallet history from The Graph.",
+      signal: "JSON",
+      Icon: LuDatabase,
+    },
+    {
+      title: "Seal the dataset",
+      body: "MerkleForge turns every row into one tamper-evident root.",
+      signal: "ROOT",
+      Icon: LuFingerprint,
+    },
+    {
+      title: "Issue a receipt",
+      body: "Send the chosen row with only the helper hashes needed to check it.",
+      signal: "PROOF",
+      Icon: LuReceiptText,
+    },
+    {
+      title: "Verify anywhere",
+      body: "A browser, wallet, or agent recomputes the root without trusting your server.",
+      signal: "PASS",
+      Icon: LuShieldCheck,
+    },
   ];
 
   return (
-    <section className="section" id="architecture">
-      <div className="section-heading">
-        <p className="eyebrow">How it works</p>
-        <h2>From live DEX data to a proof anyone can check.</h2>
-        <p>
-          ProofStream adds a verification layer between indexed blockchain data
-          and the apps, wallets, or agents that depend on it.
-        </p>
-      </div>
+    <section className="section architecture-section" id="architecture">
+      <div className="how-card" data-reveal>
+        <header className="how-card-heading">
+          <div>
+            <p className="eyebrow">How it works</p>
+            <h2>From DEX activity to a receipt anyone can verify.</h2>
+          </div>
+          <p>
+            ProofStream keeps the source visible, seals the returned rows, and
+            gives the client a small receipt it can check independently.
+          </p>
+        </header>
 
-      <div className="flow-grid">
-        {steps.map(([index, title, body]) => (
-          <article className="flow-card" key={title}>
-            <span>{index}</span>
-            <h3>{title}</h3>
-            <p>{body}</p>
-          </article>
-        ))}
+        <div className="how-workflow">
+          {steps.map((step, index) => (
+            <div className="how-step-wrap" key={step.title}>
+              <article className="how-step">
+                <header>
+                  <step.Icon aria-hidden="true" />
+                </header>
+                <small>{step.signal}</small>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </article>
+              {index < steps.length - 1 ? (
+                <LuArrowRight className="how-step-arrow" aria-hidden="true" />
+              ) : null}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

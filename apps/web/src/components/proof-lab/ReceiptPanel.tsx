@@ -1,3 +1,12 @@
+import {
+  LuBadgeCheck,
+  LuBraces,
+  LuCircleX,
+  LuFingerprint,
+  LuRefreshCw,
+  LuRoute,
+  LuShieldCheck,
+} from "react-icons/lu";
 import type { BrowserProof, VerificationResult } from "../../lib/merkle";
 import { parseReceiptRow } from "../../utils/receiptRows";
 import { short, tamperClaim } from "../../utils/text";
@@ -23,156 +32,132 @@ export function ReceiptPanel({
 }: Readonly<ReceiptPanelProps>) {
   const row = parseReceiptRow(selectedLeaf);
   const decision = verification.valid ? "Verified" : "Rejected";
-  const proofSummary = [
-    {
-      label: "Claim",
-      title: `Row #${selectedRow}`,
-      text: verification.valid
-        ? "The client received this exact row."
-        : "The claim has been changed or no longer matches the receipt.",
-    },
-    {
-      label: "Proof",
-      title: `${proof.siblings.length} helper hashes`,
-      text: "Only the missing path pieces are sent, not the full DEX dataset.",
-    },
-    {
-      label: "Decision",
-      title: decision,
-      text: verification.valid
-        ? "The recomputed fingerprint matches the public Merkle root."
-        : "The recomputed fingerprint is different, so the client rejects it.",
-    },
-  ];
 
   return (
-    <div className="tab-panel single-tab-panel">
-      <div className="panel result-panel receipt-simple">
-        <div className="panel-title">
-          <div>
-            <p className="eyebrow">Receipt</p>
-            <h3>Can the client trust this one row?</h3>
-            <p>
-              The client checks one DEX row with a tiny proof. It does not need
-              your database, the full JSON response, or every row in the dataset.
-            </p>
-          </div>
-          <button
-            className="ghost-button"
-            type="button"
-            onClick={() => onClientClaimChange(tamperClaim(selectedLeaf))}
-          >
-            Tamper test
-          </button>
+    <div className="tab-panel receipt-experience">
+      <header className="receipt-experience-heading">
+        <div>
+          <p className="eyebrow">Check the receipt</p>
+          <h3>Does this activity belong to the sealed dataset?</h3>
+          <p>
+            The browser checks the selected row against the public dataset root.
+            It does not need the full response or access to a backend database.
+          </p>
         </div>
+        <button type="button" onClick={() => onClientClaimChange(tamperClaim(selectedLeaf))}>
+          <LuBraces aria-hidden="true" /> Try a changed claim
+        </button>
+      </header>
 
-        <section className={verification.valid ? "receipt-hero verified" : "receipt-hero rejected"}>
-          <div>
-            <span className={verification.valid ? "status good" : "status bad"}>{decision}</span>
-            <h3>
-              {verification.valid
-                ? "This row is proven to be inside the sealed DEX dataset."
-                : "This row does not match the sealed DEX dataset."}
-            </h3>
-            <p>
-              ProofStream rebuilds the same Merkle root from the row and proof.
-              Matching roots mean the receipt is genuine.
-            </p>
-          </div>
-
-          <div className="receipt-proof-meter" aria-label="Proof size summary">
-            <b>{rowsLength}</b>
-            <span>rows sealed</span>
-            <i />
-            <b>{proof.siblings.length}</b>
-            <span>hashes sent</span>
-          </div>
-        </section>
-
-        <div className="receipt-explain-grid">
-          {proofSummary.map((item, index) => (
-            <article key={item.label}>
-              <span>{index + 1}</span>
-              <small>{item.label}</small>
-              <b>{item.title}</b>
-              <p>{item.text}</p>
-            </article>
-          ))}
+      <section className={verification.valid ? "receipt-verdict accepted" : "receipt-verdict rejected"}>
+        <span className="receipt-verdict-icon">
+          {verification.valid ? <LuBadgeCheck aria-hidden="true" /> : <LuCircleX aria-hidden="true" />}
+        </span>
+        <div>
+          <small>Browser result</small>
+          <h3>{decision}</h3>
+          <p>
+            {verification.valid
+              ? "The activity matches the receipt and belongs to the exact dataset represented by this root."
+              : "The activity no longer produces the expected root, so the browser refuses the claim."}
+          </p>
         </div>
+        <dl>
+          <div><dt>Dataset</dt><dd>{rowsLength} activities</dd></div>
+          <div><dt>Receipt size</dt><dd>{proof.siblings.length} helper hashes</dd></div>
+          <div><dt>Checked</dt><dd>Row #{selectedRow}</dd></div>
+        </dl>
+      </section>
 
-        <section className="human-row-card" aria-label="Selected row details">
+      <section className="receipt-checked-row" aria-label="Activity checked by the browser">
+        <header>
           <div>
-            <p className="eyebrow">Selected DEX row</p>
+            <p className="eyebrow">Activity checked</p>
             <h4>{row.pair}</h4>
           </div>
-          <dl>
-            <div>
-              <dt>USD value</dt>
-              <dd>{row.usd}</dd>
-            </div>
-            <div>
-              <dt>Amount</dt>
-              <dd>{row.amount}</dd>
-            </div>
-            <div>
-              <dt>Origin</dt>
-              <dd>{short(row.origin, 24)}</dd>
-            </div>
-            <div>
-              <dt>Tx / block</dt>
-              <dd>{short(row.tx, 24)} · {row.block}</dd>
-            </div>
-          </dl>
-        </section>
+          <span>Row #{selectedRow}</span>
+        </header>
+        <dl>
+          <div><dt>Indexed USD value</dt><dd>{row.usd}</dd></div>
+          <div><dt>Token amounts</dt><dd>{row.amount}</dd></div>
+          <div><dt>Transaction origin</dt><dd>{short(row.origin, 26)}</dd></div>
+          <div><dt>Transaction / block</dt><dd>{short(row.tx, 22)} · {row.block}</dd></div>
+        </dl>
+      </section>
 
-        <section className="claim-card simplified-claim">
-          <div>
-            <p className="eyebrow">Try it yourself</p>
-            <h4>Edit the row the client received</h4>
-            <p>
-              Change an amount, address, or token pair. A real receipt should
-              reject any changed claim immediately.
-            </p>
-          </div>
-          <textarea
-            className="claim-box"
-            id="client-claim"
-            aria-label="Claim the client received"
-            value={clientClaim}
-            onChange={(event) => onClientClaimChange(event.target.value)}
-            spellCheck={false}
-          />
-          <div className="claim-actions">
-            <button type="button" onClick={() => onClientClaimChange(selectedLeaf)}>
-              Restore real row
-            </button>
-            <button className="ghost-button" type="button" onClick={() => onClientClaimChange("")}>
-              Clear claim
-            </button>
-          </div>
-        </section>
+      <section className="receipt-check-explainer">
+        <header>
+          <p className="eyebrow">What happened in the browser?</p>
+          <h4>Three inputs produced one yes-or-no answer.</h4>
+        </header>
+        <div>
+          <article>
+            <LuBraces aria-hidden="true" />
+            <b>The activity row</b>
+            <p>The exact readable record the client wants to check.</p>
+          </article>
+          <article>
+            <LuRoute aria-hidden="true" />
+            <b>The helper hashes</b>
+            <p>A small path that reconnects this row to the full dataset.</p>
+          </article>
+          <article>
+            <LuFingerprint aria-hidden="true" />
+            <b>The public root</b>
+            <p>The expected fingerprint. A match means the row was not changed.</p>
+          </article>
+        </div>
+      </section>
 
-        <details className="technical-details">
-          <summary>Developer details: hashes and proof path</summary>
-          <div className="term-list">
-            <Result label="Public Merkle root" value={proof.root || verification.recomputedRoot} />
-            <Result label="Client recomputed root" value={verification.recomputedRoot} />
-            <Result label="Leaf hash" value={verification.leafHash} />
-            <Result label="Selected dataset row" value={`#${selectedRow} ${proof.leaf}`} />
-          </div>
+      <section className="receipt-tamper-lab">
+        <div>
+          <p className="eyebrow">Tamper test</p>
+          <h4>Change the claim and watch verification fail.</h4>
+          <p>
+            Edit an amount, address, or token pair below. Restore the original
+            row to make the receipt valid again.
+          </p>
+        </div>
+        <textarea
+          id="client-claim"
+          aria-label="Activity claim received by the client"
+          value={clientClaim}
+          onChange={(event) => onClientClaimChange(event.target.value)}
+          spellCheck={false}
+        />
+        <button type="button" onClick={() => onClientClaimChange(selectedLeaf)}>
+          <LuRefreshCw aria-hidden="true" /> Restore original activity
+        </button>
+      </section>
 
-          <div className="proof-list">
-            <p className="eyebrow">Receipt helper hashes</p>
-            {proof.siblings.map((step, index) => (
-              <div className="proof-step" key={`${step.hash}-${index}`}>
-                <span>{index + 1}</span>
-                <b>{step.side} sibling</b>
-                <code>{short(step.hash, 42)}</code>
-              </div>
-            ))}
-          </div>
-        </details>
-      </div>
+      <aside className="receipt-scope-note">
+        <LuShieldCheck aria-hidden="true" />
+        <p>
+          <b>What this proves:</b> this row belongs to the sealed response.
+          It does not prove that the upstream indexer interpreted the blockchain correctly.
+        </p>
+      </aside>
+
+      <details className="technical-details receipt-developer-details">
+        <summary>Developer details: inspect roots and proof path</summary>
+        <div className="term-list">
+          <Result label="Public Merkle root" value={proof.root || verification.recomputedRoot} />
+          <Result label="Client recomputed root" value={verification.recomputedRoot} />
+          <Result label="Leaf hash" value={verification.leafHash} />
+          <Result label="Selected dataset row" value={`#${selectedRow} ${proof.leaf}`} />
+        </div>
+
+        <div className="proof-list">
+          <p className="eyebrow">Receipt helper hashes</p>
+          {proof.siblings.map((step, index) => (
+            <div className="proof-step" key={`${step.hash}-${index}`}>
+              <span>{index + 1}</span>
+              <b>{step.side} sibling</b>
+              <code>{short(step.hash, 42)}</code>
+            </div>
+          ))}
+        </div>
+      </details>
     </div>
   );
 }

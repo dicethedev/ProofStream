@@ -1,3 +1,11 @@
+import {
+  LuArrowRight,
+  LuCircleCheck,
+  LuFingerprint,
+  LuListChecks,
+  LuRefreshCw,
+  LuRows3,
+} from "react-icons/lu";
 import { parseReceiptRows } from "../../utils/receiptRows";
 import { short } from "../../utils/text";
 
@@ -6,6 +14,7 @@ type DatasetPanelProps = {
   readonly rows: string[];
   readonly rowsText: string;
   readonly selectedRow: number;
+  readonly onOpenReceipt: () => void;
   readonly onRowsTextChange: (value: string) => void;
   readonly onSelectedRowChange: (value: number) => void;
   readonly onUseJsonRows: () => void;
@@ -16,102 +25,128 @@ export function DatasetPanel({
   rows,
   rowsText,
   selectedRow,
+  onOpenReceipt,
   onRowsTextChange,
   onSelectedRowChange,
   onUseJsonRows,
 }: DatasetPanelProps) {
   const parsedRows = parseReceiptRows(rows);
+  const safeSelectedRow = Math.min(selectedRow, Math.max(rows.length - 1, 0));
 
   return (
-    <div className="tab-panel single-tab-panel">
-      <div className="panel dataset-panel">
-        <div className="panel-title">
-          <div>
-            <p className="eyebrow">Dataset</p>
-            <h3>Rows ProofStream will seal into one root</h3>
-            <p>
-              Each card is one DEX event from the JSON result. ProofStream hashes
-              these rows into one Merkle root, then proves only the row you pick.
-            </p>
-          </div>
-          <button className="ghost-button" type="button" onClick={onUseJsonRows}>
-            Use JSON rows
-          </button>
-        </div>
-
-        <div className="dataset-summary" aria-label="Dataset summary">
-          <article>
-            <span>Rows sealed</span>
-            <b>{rows.length}</b>
-            <p>Total rows that become the dataset fingerprint.</p>
-          </article>
-          <article>
-            <span>Proof target</span>
-            <b>Row #{Math.min(selectedRow, Math.max(rows.length - 1, 0))}</b>
-            <p>The one row the client will verify.</p>
-          </article>
-          <article>
-            <span>Dataset shape</span>
-            <b>Merkle root</b>
-            <p>One public fingerprint for the full list.</p>
-          </article>
-        </div>
-
-        <div className="dataset-table" aria-label="Readable DEX rows">
-          {parsedRows.map((row, index) => (
-            <button
-              key={`${row.raw}-${index}`}
-              type="button"
-              className={index === selectedRow ? "dataset-row active" : "dataset-row"}
-              onClick={() => onSelectedRowChange(index)}
-            >
-              <span className="row-index">#{index}</span>
-              <span>
-                <small>Pair</small>
-                <b>{row.pair}</b>
-              </span>
-              <span>
-                <small>USD</small>
-                <b>{row.usd}</b>
-              </span>
-              <span>
-                <small>Origin</small>
-                <code>{short(row.origin, 18)}</code>
-              </span>
-              <span>
-                <small>Tx / block</small>
-                <code>{short(row.tx, 18)} · {row.block}</code>
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <label htmlFor="row">Which row should the client check?</label>
-        <input
-          id="row"
-          type="number"
-          min={0}
-          max={Math.max(rows.length - 1, 0)}
-          value={selectedRow}
-          onChange={(event) => onSelectedRowChange(Number(event.target.value))}
-        />
-
-        <details className="raw-dataset-editor">
-          <summary>Edit raw receipt rows</summary>
+    <div className="tab-panel dataset-experience">
+      <header className="dataset-experience-heading">
+        <div>
+          <p className="eyebrow">Read the dataset</p>
+          <h3>Choose the activity you want to prove.</h3>
           <p>
-            One line equals one receipt row. You can change names, amounts, tx
-            hashes, or paste your own rows, then open the Receipt tab to verify.
+            Every card below came from one JSON object. Pick a card to create a
+            receipt for that exact activity.
           </p>
-          <textarea
-            id="rows"
-            value={rowsText}
-            onChange={(event) => onRowsTextChange(event.target.value)}
-            spellCheck={false}
-          />
-        </details>
+        </div>
+        <button type="button" onClick={onUseJsonRows}>
+          <LuRefreshCw aria-hidden="true" /> Refresh from JSON
+        </button>
+      </header>
 
-        <p className="hint">{message}</p>
+      <section className="dataset-plain-guide">
+        <LuFingerprint aria-hidden="true" />
+        <div>
+          <b>One list, one tamper-evident fingerprint</b>
+          <p>
+            ProofStream hashes all {rows.length} activities into one Merkle root.
+            If any row changes, that fingerprint changes too.
+          </p>
+        </div>
+      </section>
+
+      <div className="dataset-summary-v2" aria-label="Dataset summary">
+        <article>
+          <LuRows3 aria-hidden="true" />
+          <span><b>{rows.length}</b> readable activities</span>
+        </article>
+        <article>
+          <LuListChecks aria-hidden="true" />
+          <span><b>Row #{safeSelectedRow}</b> selected for proof</span>
+        </article>
+        <article>
+          <LuFingerprint aria-hidden="true" />
+          <span><b>One root</b> represents the full list</span>
+        </article>
       </div>
+
+      {parsedRows.length > 0 ? (
+        <div className="dataset-activity-list" aria-label="Readable DEX activities">
+          {parsedRows.map((row, index) => {
+            const selected = index === safeSelectedRow;
+
+            return (
+              <button
+                key={`${row.raw}-${index}`}
+                type="button"
+                className={selected ? "dataset-activity selected" : "dataset-activity"}
+                aria-pressed={selected}
+                onClick={() => onSelectedRowChange(index)}
+              >
+                <span className="dataset-activity-choice">
+                  {selected ? <LuCircleCheck aria-hidden="true" /> : <i />}
+                  <small>{selected ? "Selected for receipt" : `Activity ${index + 1}`}</small>
+                </span>
+                <span className="dataset-activity-pair">
+                  <small>Token pair</small>
+                  <b>{row.pair}</b>
+                  <em>{row.amount}</em>
+                </span>
+                <span>
+                  <small>Indexed value</small>
+                  <b>{row.usd}</b>
+                </span>
+                <span>
+                  <small>Transaction origin</small>
+                  <code>{short(row.origin, 20)}</code>
+                </span>
+                <span>
+                  <small>Transaction / block</small>
+                  <code>{short(row.tx, 16)} · {row.block}</code>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="dataset-empty-state">
+          <LuRows3 aria-hidden="true" />
+          <h4>No readable activities yet</h4>
+          <p>Return to Query, fetch data, then convert the JSON response into rows.</p>
+        </div>
+      )}
+
+      <div className="dataset-next-action">
+        <div>
+          <small>Next step</small>
+          <b>Create a receipt for row #{safeSelectedRow}</b>
+          <p>The client will receive this row and only the hashes needed to check it.</p>
+        </div>
+        <button type="button" onClick={onOpenReceipt} disabled={rows.length === 0}>
+          Create proof receipt <LuArrowRight aria-hidden="true" />
+        </button>
+      </div>
+
+      <details className="raw-dataset-editor">
+        <summary>Advanced: edit the normalized receipt rows</summary>
+        <p>
+          One line is one activity. Editing a line lets you test how a changed
+          dataset produces a different fingerprint.
+        </p>
+        <textarea
+          id="rows"
+          value={rowsText}
+          onChange={(event) => onRowsTextChange(event.target.value)}
+          spellCheck={false}
+        />
+      </details>
+
+      <p className="dataset-message"><LuCircleCheck aria-hidden="true" /> {message}</p>
     </div>
   );
 }
