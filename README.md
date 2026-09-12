@@ -1,241 +1,267 @@
-# MerkleForge ProofStream
+# ProofStream
 
-> Live blockchain data, backed by cryptographic proof receipts.
+> Turn live DEX activity into a proof receipt anyone can inspect and verify.
 
-ProofStream is a hackathon project built on top of
-[MerkleForge Framework](https://github.com/dicethedev/MerkleForge). It turns
-indexed DEX activity from The Graph into compact Merkle receipts, so a user,
-wallet, dashboard, or AI agent can verify one record without trusting the
-server that returned it.
+ProofStream fetches indexed swap activity from
+[The Graph](https://thegraph.com/), turns the response into readable rows, and
+uses [MerkleForge Framework](https://github.com/dicethedev/MerkleForge) to seal
+the dataset with a Merkle root. A user can then verify one selected activity in
+the browser using only that row and its compact proof.
 
-## The Problem
+This repository contains an interactive React proof lab and a Rust proof engine.
 
-Most blockchain apps depend on indexed API data:
+## The Idea
 
-> "This wallet made this swap."  
-> "This pool produced these recent events."  
-> "This dashboard result came from live chain activity."
-
-That is useful, but the user still has to trust the backend response. ProofStream
-adds a verification layer: the app returns the row, the dataset root, and a tiny
-proof path. The client can then check the claim locally.
-
-## What ProofStream Does
-
-- Fetches live DEX swap data from The Graph.
-- Converts raw JSON into readable receipt rows.
-- Commits the row list into a Merkle root using MerkleForge.
-- Produces a proof for one selected row.
-- Verifies that proof in the browser with no database access.
-- Lets users tamper with the row and see verification fail immediately.
-
-## Why It Matters
-
-ProofStream is a practical demo of stateless verification for API-driven
-blockchain apps. Instead of asking users to blindly trust an indexer, it shows
-how API responses can carry cryptographic evidence.
-
-This is useful for:
-
-- wallets checking activity summaries
-- dashboards proving displayed market data
-- AI agents consuming blockchain API responses
-- light clients that cannot store full datasets
-- data providers that want verifiable API responses
-
-## Live Demo Flow
-
-1. Paste a Graph Gateway API key.
-2. Choose a DEX preset, such as Uniswap V3 or PancakeSwap V3.
-3. Run a live swaps query.
-4. Inspect the raw GraphQL JSON result.
-5. Convert JSON into human-readable rows.
-6. Pick one row to verify.
-7. Open the receipt tab and check the proof result.
-8. Use **Tamper test** to change the row and watch verification reject it.
-
-## How It Works
+Blockchain applications often show data returned by an indexer or API. The data
+may be useful, but the person reading it still has to trust the server that
+presented it. ProofStream adds a portable receipt to the response:
 
 ```text
-The Graph subgraph
-      ↓
-Live DEX swap JSON
-      ↓
-Readable event rows
-      ↓
-MerkleForge BinaryMerkleTree<Keccak256>
-      ↓
-Dataset root + selected-row proof
-      ↓
-Browser verifies the receipt statelessly
+The Graph JSON -> readable DEX rows -> Merkle root -> selected-row proof -> local verification
 ```
 
-The important idea: the client does not need the full dataset. It only needs the
-selected row, the Merkle root, and the sibling hashes in the proof path.
+The full dataset can stay with the data provider. A client only needs:
 
-## Key Features
+- the activity row being checked
+- the public dataset root
+- the row index
+- the helper hashes in the Merkle proof
 
-- **Graph-powered live data** — pulls indexed DEX swaps from The Graph Gateway.
-- **DEX presets** — includes Uniswap V3, SushiSwap V3, and PancakeSwap V3
-  presets across multiple networks.
-- **Custom subgraph support** — paste any swaps-compatible subgraph ID.
-- **API key privacy** — API keys are kept only in browser memory and sent as an
-  `Authorization: Bearer ...` header.
-- **Readable dataset view** — raw JSON becomes simple rows people can inspect.
-- **Proof receipt view** — explains claim, proof, and decision in plain language.
-- **Tamper testing** — edit a claim and watch proof verification fail.
-- **Rust proof engine** — backend/core proof packet generation uses MerkleForge.
+## What A Receipt Proves
 
-## Repository Structure
+| A valid receipt proves | It does not prove |
+|---|---|
+| The selected row belongs to the exact sealed dataset. | The Graph indexer interpreted the blockchain correctly. |
+| The row has not changed since the receipt was created. | The swap was profitable, safe, or approved by ProofStream. |
+| The browser can reproduce the published root without the full dataset. | The current demo root was anchored onchain or signed by a trusted publisher. |
 
-```text
-merkleforge-proofstream/
-├── apps/
-│   └── web/
-│       ├── src/components/          # React UI sections
-│       ├── src/components/proof-lab # Query, dataset, receipt, guide components
-│       ├── src/data/                # DEX presets and UI copy
-│       ├── src/lib/                 # Graph adapter and Merkle proof logic
-│       └── src/utils/               # Formatting and row parsing helpers
-├── crates/
-│   └── proofstream-core/
-│       └── src/                     # Rust proof packet implementation
-├── .env.example
-├── Cargo.toml
-└── package.json
-```
+The current demo creates and verifies the root locally so the entire mechanism
+is visible. A production integration can sign the root, publish it through an
+API, or anchor it onchain.
 
-## Implementation Map
+## What You Can Do
 
-| Area | File | What to Review |
-|---|---|---|
-| React app entry | `apps/web/src/App.tsx` | Page composition |
-| Hero section | `apps/web/src/components/Header.tsx` | Project positioning and CTA |
-| Proof playground coordinator | `apps/web/src/components/ProofLab.tsx` | Main state, query flow, proof flow |
-| Graph adapter | `apps/web/src/lib/graph.ts` | The Graph endpoint, query templates, retry handling |
-| Browser proof logic | `apps/web/src/lib/merkle.ts` | In-browser Merkle proof generation and verification |
-| DEX presets | `apps/web/src/data/dexPresets.ts` | Supported Graph subgraphs |
-| Dataset UI | `apps/web/src/components/proof-lab/DatasetPanel.tsx` | Human-readable row view |
-| Receipt UI | `apps/web/src/components/proof-lab/ReceiptPanel.tsx` | Plain-language verification result |
-| Guided overlay | `apps/web/src/components/proof-lab/GuideOverlay.tsx` | Step-by-step demo guidance |
-| Rust proof core | `crates/proofstream-core/src/lib.rs` | MerkleForge-backed proof packet generation |
-| Rust CLI demo | `crates/proofstream-core/src/main.rs` | JSON proof packet output |
+- Query recent swaps, one pool, or activity associated with a wallet origin.
+- Choose a ready-to-query DEX preset or supply a compatible subgraph ID.
+- Inspect and edit both the GraphQL request and raw JSON response.
+- Convert nested JSON into readable activity cards.
+- See token logos, formatted values, and exact values on hover.
+- Select any returned row and create a compact Merkle proof receipt.
+- Verify the receipt locally, without access to the original tree or database.
+- Change the selected row and watch the same proof be rejected.
+- Inspect roots, hashes, and proof directions in the developer details.
+- Download a structured JSON receipt or a plain-language PDF receipt.
+- Copy a preset's subgraph ID or open it in Graph Explorer.
+
+Token artwork is loaded for presentation only. Logos and display formatting do
+not change the canonical row data or any cryptographic hash.
 
 ## Quick Start
 
-Install dependencies:
+### Requirements
+
+- Node.js and npm compatible with Vite 7
+- Rust 1.97.1 for the Rust proof engine
+- A Graph Gateway API key for live queries
+
+### Run The Web App
 
 ```bash
+git clone https://github.com/dicethedev/ProofStream.git
+cd ProofStream
 npm install
-```
-
-Run the web demo:
-
-```bash
 npm run dev
 ```
 
-Run the Rust proof engine:
+Open the local URL printed by Vite. The proof lab is also available directly at
+`http://localhost:5173/#/proof-lab`.
+
+Create or manage a Graph Gateway API key in
+[Subgraph Studio](https://thegraph.com/studio/). Paste the key into the proof
+lab when prompted.
+
+### Run The Rust Demo
 
 ```bash
 cargo run -p proofstream-core
 ```
 
-Run tests:
+The command prints a JSON proof packet produced with MerkleForge.
 
-```bash
-cargo test
-```
+## Five-Minute Demo
 
-Build the web app:
+1. Open **Proof Lab** and read the short introduction.
+2. Paste a Graph Gateway API key and choose a DEX source.
+3. Keep **Recent swaps** selected and run the query.
+4. Inspect the GraphQL request and JSON response, then choose **Build dataset**.
+5. Select an activity, open **Receipt**, and verify it in the browser.
+6. Run the tamper test to see a changed row fail verification.
+7. Download the receipt as JSON or PDF.
 
-```bash
-npm run build
-```
+Rows use zero-based indexes: row `0` is the first activity in the response.
+After a successful query, the first pool and wallet-origin values are filled
+automatically so the other query modes are easy to try.
 
-## Live Data Setup
+## Live Data Sources
 
-Copy the example environment file:
+The current presets use swaps-compatible subgraphs on The Graph decentralized
+network.
 
-```bash
-cp .env.example apps/web/.env.local
-```
+| DEX | Networks |
+|---|---|
+| Uniswap V3 | Ethereum, Base, Arbitrum One, Optimism, Polygon, BNB Chain, Celo, Avalanche |
+| SushiSwap V3 | Ethereum |
+| Aerodrome | Base |
+| Custom DEX | Any compatible subgraph supplied by the user |
 
-Then open the app and paste a Graph Gateway API key into the UI.
+Subgraph schemas are not universal. Custom sources must expose the swap fields
+used by the selected query template. ProofStream includes schema-aware adapters
+for the bundled Uniswap-style and SushiSwap V3 presets.
 
-ProofStream does **not** store the API key in local storage, session storage, or
-environment output. It stays in React state while the page is open and is sent
-only as an authorization header when running a query.
+### Query Modes
 
-Visible query URLs use this form:
+| Mode | What it returns | Best use |
+|---|---|---|
+| Recent swaps | The newest indexed swaps | Fastest first demo |
+| Pool feed | Swaps from one pool address | Monitoring a market or liquidity pool |
+| Wallet activity | Swaps whose `origin` matches a wallet | Reviewing activity associated with an origin account |
 
-```text
-https://gateway.thegraph.com/api/subgraphs/id/{subgraph_id}
-```
+If a preset becomes unavailable or its schema changes, select another preset or
+use a compatible subgraph from
+[Graph Explorer](https://thegraph.com/explorer).
 
-## Supported Demo Sources
+## Verification Flow
 
-The current playground includes presets for:
+1. **Fetch**: the browser sends an editable GraphQL request to The Graph Gateway.
+2. **Read**: ProofStream normalizes the returned swaps into deterministic text rows.
+3. **Seal**: every row is hashed as a leaf and combined into one Merkle root.
+4. **Prove**: ProofStream packages one row with only the sibling hashes needed to reconstruct that root.
+5. **Verify**: the browser hashes the row and proof path again, then accepts only when the recomputed root equals the receipt root.
 
-- Uniswap V3 on Ethereum
-- Uniswap V3 on Base
-- Uniswap V3 on Arbitrum One
-- Uniswap V3 on Optimism
-- Uniswap V3 on Polygon
-- SushiSwap V3 on Ethereum
-- PancakeSwap V3 on Ethereum
-- PancakeSwap V3 on BNB Chain
-- Custom DEX subgraph ID
+Changing the selected row changes its leaf hash. The old proof then reconstructs
+a different root and verification fails.
 
-The query modes are:
+## Receipt Contents
 
-- **Recent swaps** — safest demo mode; fetches latest swaps.
-- **Pool feed** — filters by one pool address.
-- **Wallet activity** — filters by swap origin wallet.
+The receipt view keeps the result readable first and places cryptographic detail
+behind an expandable developer section. A receipt includes:
 
-After a successful query, ProofStream auto-fills the pool and wallet inputs from
-the first returned swap so judges can quickly test the other modes.
+- verification result and a plain-language explanation
+- DEX, network, token pair, indexed value, transaction, and block
+- selected row and total dataset size
+- public Merkle root and client-recomputed root
+- leaf hash and ordered helper hashes
+- exact source values used to create the proof
 
-## Security And Data Notes
+Use the JSON export for software integration and the PDF export for sharing a
+human-readable record.
 
-- This is a hackathon proof-of-concept, not a trading tool.
-- Live rows come from The Graph and its indexers.
-- ProofStream verifies dataset membership for the returned rows; it does not
-  claim the subgraph itself is canonical Ethereum consensus.
-- API keys are not persisted by the app.
-- The browser proof demo is intentionally transparent so judges can inspect the
-  data, receipt, root, and helper hashes.
+## API-Key Privacy
 
-## Built On MerkleForge
+ProofStream does not save a Graph API key to local storage, session storage, a
+database, or the repository. The key remains in React memory while the page is
+open and is sent only in the Graph Gateway authorization header for the query.
+Refreshing or closing the page clears it.
 
-The Rust proof engine uses:
+Do not place a real key in a `VITE_*` environment variable: Vite exposes those
+values to browser code. The included [`.env.example`](./.env.example) contains
+only optional, non-secret demo defaults.
+
+## Rust Proof Engine
+
+The Rust crate uses the published MerkleForge components:
 
 - `merkle-core`
 - `merkleforge-hash`
 - `merkle-variants`
 
-The browser demo mirrors the same idea in TypeScript so users can see the proof
-flow live without running a backend.
+It constructs a `BinaryMerkleTree<Keccak256>`, creates a proof packet, drops the
+tree, and recomputes the root statelessly from the selected row and proof. The
+web app implements the same domain-separated Keccak-256 binary proof flow in
+TypeScript so visitors can run it without a backend.
 
-## Hackathon Direction
+## Verification Commands
 
-ProofStream is designed to show how verifiable API responses can become normal
-developer infrastructure. The current version focuses on live DEX activity and
-browser receipts. Natural next steps include:
+```bash
+# Type-check and build the React app
+npm run build
 
-- API endpoint for proof packets
-- agent-readable proof tools
-- onchain root anchoring
-- support for more subgraph schemas
-- downloadable/shareable receipt format
+# Run the Rust workspace tests
+npm run rust:test
 
-## Judge Review Checklist
+# Run the Rust proof packet demo
+npm run rust:demo
+```
 
-- Open the web demo and read the intro modal.
-- Query live DEX data from The Graph.
-- Confirm JSON appears in the query panel.
-- Convert JSON to readable dataset rows.
-- Select a row and verify the receipt.
-- Tamper with the selected row and confirm the proof rejects it.
-- Inspect `apps/web/src/lib/merkle.ts` for browser proof logic.
-- Inspect `crates/proofstream-core/src/lib.rs` for Rust/MerkleForge proof packet generation.
+## Repository Structure
+
+```text
+ProofStream/
+|-- apps/web/
+|   |-- src/components/             React pages and reusable sections
+|   |-- src/components/proof-lab/   Query, dataset, receipt, guide, and toast UI
+|   |-- src/data/                   DEX presets and proof-lab content
+|   |-- src/lib/                    Graph adapter, token assets, and Merkle logic
+|   `-- src/utils/                  Row parsing, formatting, clipboard, and exports
+|-- crates/proofstream-core/        MerkleForge-backed Rust proof engine
+|-- .env.example                    Optional non-secret browser defaults
+|-- Cargo.toml                      Rust workspace
+`-- package.json                    Web and Rust convenience commands
+```
+
+## Implementation Map
+
+| Area | File |
+|---|---|
+| App routes and page composition | `apps/web/src/App.tsx` |
+| Proof-lab state and workflow | `apps/web/src/components/ProofLab.tsx` |
+| Query configuration and console | `apps/web/src/components/proof-lab/QueryPanel.tsx` |
+| Readable activity selection | `apps/web/src/components/proof-lab/DatasetPanel.tsx` |
+| Verification and receipt downloads | `apps/web/src/components/proof-lab/ReceiptPanel.tsx` |
+| GraphQL templates and request adapter | `apps/web/src/lib/graph.ts` |
+| Browser Merkle implementation | `apps/web/src/lib/merkle.ts` |
+| DEX and network presets | `apps/web/src/data/dexPresets.ts` |
+| Token artwork resolution | `apps/web/src/lib/tokenAssets.ts` |
+| Human-readable amount formatting | `apps/web/src/utils/activityFormat.ts` |
+| JSON and PDF receipt generation | `apps/web/src/utils/receiptExport.ts` |
+| Rust proof packet implementation | `crates/proofstream-core/src/lib.rs` |
+
+## Current Limitations
+
+- ProofStream currently supports swaps-compatible GraphQL schemas, not every
+  subgraph schema.
+- The browser demo proves membership in the fetched response; it does not prove
+  blockchain consensus or indexer correctness.
+- Roots are generated locally and are not yet signed or anchored onchain.
+- Live results depend on The Graph Gateway and the selected indexers being
+  available and synchronized.
+- This project is a verification demo, not financial or trading advice.
+
+## Roadmap
+
+- signed and onchain-anchored dataset roots
+- shareable receipt URLs and a receipt verification API
+- agent-friendly proof tools and machine-readable verification responses
+- additional schema adapters beyond swap events
+- independently hosted proof generation for production clients
+
+## Contributing
+
+Issues and pull requests are welcome. For a focused contribution:
+
+1. Fork the repository and create a feature branch.
+2. Keep UI code reusable and preserve the plain-language proof explanations.
+3. Run `npm run build` and `npm run rust:test`.
+4. Explain the user-visible behavior and proof implications in the pull request.
+
+When adding a data source, document its network, subgraph ID, schema family, and
+the exact query modes it supports.
+
+## License
+
+ProofStream is dual-licensed under the MIT License and Apache License 2.0. You may use, modify, and distribute this project under either license at your option.
+
+- **MIT License**: See [LICENSE-MIT](./LICENSE-MIT) for details.
+- **Apache License 2.0**: See [LICENSE-APACHE](./LICENSE-APACHE) for details.
+
+When using ProofStream in your own project, you may choose which license works best for your use case. This dual licensing ensures compatibility with projects that require a specific open-source license.
