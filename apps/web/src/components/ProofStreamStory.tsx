@@ -32,7 +32,7 @@ const benefits = [
 ] as const;
 
 type StoryVisualProps = {
-  type: (typeof benefits)[number]["visual"];
+  readonly type: (typeof benefits)[number]["visual"];
 };
 
 function StoryVisual({ type }: StoryVisualProps) {

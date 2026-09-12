@@ -30,7 +30,7 @@ function protocolLogoUrl(domain: string) {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 }
 
-function DexOrbitLogo({ integration, index }: { integration: Integration; index: number }) {
+function DexOrbitLogo({ integration, index }: Readonly<{ integration: Integration; index: number }>) {
   const [failed, setFailed] = useState(false);
   const style = {
     "--ring-x": `${integration.ring[0]}px`,
