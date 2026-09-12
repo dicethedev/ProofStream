@@ -67,7 +67,7 @@ pub fn build_proof(records: &[EventRecord], row: usize) -> Result<ProofPacket, P
     }
 
     let proof = tree.generate_proof(LeafIndex(row))?;
-    let root = tree.root().ok_or(ProofStreamError::EmptyDataset)?.clone();
+    let root = *tree.root().ok_or(ProofStreamError::EmptyDataset)?;
     let checked_bytes = canonical_event_bytes(record)?;
     let valid = BinaryMerkleTree::<Keccak256>::verify(&root, &checked_bytes, &proof);
     let client_recomputed_root = recompute_root_hex(&checked_bytes, &proof);
