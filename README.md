@@ -112,11 +112,27 @@ network.
 | Uniswap V3 | Ethereum, Base, Arbitrum One, Optimism, Polygon, BNB Chain, Celo, Avalanche |
 | SushiSwap V3 | Ethereum |
 | Aerodrome | Base |
+| Messari DEX AMM standard | SushiSwap on Ethereum, ApeSwap on BNB Chain, Trader Joe on Avalanche |
 | Custom DEX | Any compatible subgraph supplied by the user |
 
 Subgraph schemas are not universal. Custom sources must expose the swap fields
 used by the selected query template. ProofStream includes schema-aware adapters
 for the bundled Uniswap-style and SushiSwap V3 presets.
+
+### Standardized Cross-Protocol Queries
+
+ProofStream also integrates the Messari DEX AMM 1.3.2 standard. The bundled
+SushiSwap, ApeSwap, and Trader Joe standard presets use one shared GraphQL
+query and one normalization path; only the live Subgraph deployment ID changes.
+Each resulting receipt row commits the protocol slug and reported schema
+version alongside the activity data.
+
+The deployments come from Messari's public
+[standardized Subgraph registry](https://github.com/messari/subgraphs/blob/master/deployment/deployment.json),
+and every request still runs against The Graph decentralized network through
+the user's Gateway API key. This demonstrates the practical benefit of the
+standard: another compliant protocol can be added as data, without creating a
+new protocol-specific query adapter.
 
 ### Query Modes
 

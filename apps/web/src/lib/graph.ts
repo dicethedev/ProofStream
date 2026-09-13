@@ -1,5 +1,12 @@
+import {
+  isStandardizedDexSwap,
+  normalizeStandardizedDexSwap,
+  standardizedDexQueryTemplate,
+  type StandardizedDexSwap,
+} from "./standardizedDex";
+
 export type GraphFetchMode = "recent" | "pool" | "wallet";
-export type GraphSchema = "sushiswap-v3" | "uniswap-v3";
+export type GraphSchema = "messari-dex-amm" | "sushiswap-v3" | "uniswap-v3";
 
 export type FetchGraphEventsInput = {
   apiKey: string;
@@ -55,6 +62,10 @@ export function queryTemplate(
   pool: string,
   schema: GraphSchema = "uniswap-v3",
 ): string {
+  if (schema === "messari-dex-amm") {
+    return standardizedDexQueryTemplate(mode, pool);
+  }
+
   if (schema === "sushiswap-v3") {
     return sushiQueryTemplate(mode, pool);
   }
@@ -207,6 +218,14 @@ function delay(ms: number) {
 }
 
 function formatSwapRow(swap: GraphSwap, schema: GraphSchema) {
+  if (schema === "messari-dex-amm") {
+    if (!isStandardizedDexSwap(swap)) {
+      throw new Error("The returned data does not match the Messari DEX AMM standard.");
+    }
+
+    return normalizeStandardizedDexSwap(swap);
+  }
+
   if (schema === "sushiswap-v3" && isSushiSwap(swap)) {
     return [
       `swap:${swap.tokenIn.symbol}/${swap.tokenOut.symbol}`,
@@ -242,6 +261,7 @@ function swapPool(swap: GraphSwap | undefined) {
 
 function swapWallet(swap: GraphSwap | undefined) {
   if (!swap) return "";
+  if (isStandardizedDexSwap(swap)) return swap.from;
   return isSushiSwap(swap) ? swap.account.id : swap.origin;
 }
 
@@ -382,4 +402,8 @@ type SushiGraphSwap = {
   tokenOut: { id?: string; symbol: string };
 };
 
-type GraphSwap = SushiGraphSwap | UniswapGraphSwap;
+type GraphSwap = StandardizedDexSwap | SushiGraphSwap | UniswapGraphSwap;
+
+export function graphSchemaUsesRawTokenUnits(schema: GraphSchema) {
+  return schema === "messari-dex-amm" || schema === "sushiswap-v3";
+}

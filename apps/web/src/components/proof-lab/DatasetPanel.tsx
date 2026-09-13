@@ -6,6 +6,7 @@ import {
   LuRefreshCw,
   LuRows3,
 } from "react-icons/lu";
+import { graphSchemaUsesRawTokenUnits, type GraphSchema } from "../../lib/graph";
 import { parseReceiptRows } from "../../utils/receiptRows";
 import { short } from "../../utils/text";
 import { formatPairLabel, IndexedUsdValue, TokenAmountValue } from "./ActivityValue";
@@ -16,7 +17,7 @@ type DatasetPanelProps = {
   readonly network: string;
   readonly rows: string[];
   readonly rowsText: string;
-  readonly schema: "sushiswap-v3" | "uniswap-v3";
+  readonly schema: GraphSchema;
   readonly selectedRow: number;
   readonly onOpenReceipt: () => void;
   readonly onRowsTextChange: (value: string) => void;
@@ -113,7 +114,7 @@ export function DatasetPanel({
                   <TokenAmountValue
                     amount={row.amount}
                     network={network}
-                    rawUnits={schema === "sushiswap-v3"}
+                    rawUnits={graphSchemaUsesRawTokenUnits(schema)}
                     token0Address={row.token0Address}
                     token0Symbol={row.token0Symbol}
                     token1Address={row.token1Address}

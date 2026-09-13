@@ -10,6 +10,7 @@ import {
   LuRoute,
   LuShieldCheck,
 } from "react-icons/lu";
+import { graphSchemaUsesRawTokenUnits, type GraphSchema } from "../../lib/graph";
 import type { BrowserProof, VerificationResult } from "../../lib/merkle";
 import { parseReceiptRow } from "../../utils/receiptRows";
 import { downloadReceiptJson, downloadReceiptPdf } from "../../utils/receiptExport";
@@ -22,7 +23,7 @@ type ReceiptPanelProps = {
   readonly network: string;
   readonly proof: BrowserProof;
   readonly rowsLength: number;
-  readonly schema: "sushiswap-v3" | "uniswap-v3";
+  readonly schema: GraphSchema;
   readonly selectedLeaf: string;
   readonly selectedRow: number;
   readonly verification: VerificationResult;
@@ -127,7 +128,7 @@ export function ReceiptPanel({
               <TokenAmountValue
                 amount={row.amount}
                 network={network}
-                rawUnits={schema === "sushiswap-v3"}
+                rawUnits={graphSchemaUsesRawTokenUnits(schema)}
                 token0Address={row.token0Address}
                 token0Symbol={row.token0Symbol}
                 token1Address={row.token1Address}

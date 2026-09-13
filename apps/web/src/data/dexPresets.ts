@@ -1,3 +1,10 @@
+import type { GraphSchema } from "../lib/graph";
+import {
+  STANDARDIZED_DEX_REGISTRY_URL,
+  STANDARDIZED_DEX_SCHEMA,
+  STANDARDIZED_DEX_SCHEMA_VERSION,
+} from "../lib/standardizedDex";
+
 export type DexPreset = {
   id: string;
   name: string;
@@ -5,7 +12,12 @@ export type DexPreset = {
   subgraphId: string;
   logoDomain: string;
   description: string;
-  schema: "sushiswap-v3" | "uniswap-v3";
+  schema: GraphSchema;
+  standard?: {
+    name: string;
+    registryUrl: string;
+    version: string;
+  };
   custom?: boolean;
 };
 
@@ -99,6 +111,48 @@ export const DEX_PRESETS: DexPreset[] = [
     logoDomain: "aerodrome.finance",
     description: "High-volume Aerodrome swaps from its full Base subgraph.",
     schema: "uniswap-v3",
+  },
+  {
+    id: "messari-sushiswap-ethereum",
+    name: "SushiSwap (Standard)",
+    network: "Ethereum",
+    subgraphId: "77jZ9KWeyi3CJ96zkkj5s1CojKPHt6XJKjLFzsDCd8Fd",
+    logoDomain: "sushi.com",
+    description: "Messari DEX AMM 1.3.2. Shares one query contract with ApeSwap and Trader Joe.",
+    schema: "messari-dex-amm",
+    standard: {
+      name: STANDARDIZED_DEX_SCHEMA,
+      registryUrl: STANDARDIZED_DEX_REGISTRY_URL,
+      version: STANDARDIZED_DEX_SCHEMA_VERSION,
+    },
+  },
+  {
+    id: "messari-apeswap-bsc",
+    name: "ApeSwap (Standard)",
+    network: "BNB Chain",
+    subgraphId: "4u1aTvzBMjBdm7aK7uQmjffhoPc6Ceu3w2nTfq6vUQnb",
+    logoDomain: "apeswap.finance",
+    description: "Messari DEX AMM 1.3.2 on BNB Chain with the shared cross-protocol query.",
+    schema: "messari-dex-amm",
+    standard: {
+      name: STANDARDIZED_DEX_SCHEMA,
+      registryUrl: STANDARDIZED_DEX_REGISTRY_URL,
+      version: STANDARDIZED_DEX_SCHEMA_VERSION,
+    },
+  },
+  {
+    id: "messari-trader-joe-avalanche",
+    name: "Trader Joe (Standard)",
+    network: "Avalanche",
+    subgraphId: "H2VGe2tYavUEosSjomHwxbvCKy3LaNaW8Kjw2KhhHs1K",
+    logoDomain: "lfj.gg",
+    description: "Messari DEX AMM 1.3.2 on Avalanche with the shared cross-protocol query.",
+    schema: "messari-dex-amm",
+    standard: {
+      name: STANDARDIZED_DEX_SCHEMA,
+      registryUrl: STANDARDIZED_DEX_REGISTRY_URL,
+      version: STANDARDIZED_DEX_SCHEMA_VERSION,
+    },
   },
   {
     id: "custom",

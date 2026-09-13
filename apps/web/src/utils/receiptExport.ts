@@ -1,4 +1,4 @@
-import type { GraphSchema } from "../lib/graph";
+import { graphSchemaUsesRawTokenUnits, type GraphSchema } from "../lib/graph";
 import type { BrowserProof } from "../lib/merkle";
 import { resolveTokenAsset } from "../lib/tokenAssets";
 import {
@@ -68,7 +68,7 @@ export async function downloadReceiptPdf(receipt: ReceiptExport) {
     decimals1: token1?.decimals,
     name0: token0?.name,
     name1: token1?.name,
-    rawUnits: receipt.schema === "sushiswap-v3",
+    rawUnits: graphSchemaUsesRawTokenUnits(receipt.schema),
     symbol0: receipt.activity.token0Symbol,
     symbol1: receipt.activity.token1Symbol,
   });
